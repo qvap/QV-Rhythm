@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://cjaavcuxveba4"]
+
+[ext_resource type="Script" path="res://Scripts/Notes/TapNote.gd" id="1_xka3s"]
+
+[sub_resource type="Gradient" id="Gradient_5xj4x"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_hjceb"]
+gradient = SubResource("Gradient_5xj4x")
+
+[node name="Note" type="Node2D"]
+script = ExtResource("1_xka3s")
+
+[node name="Skin" type="Sprite2D" parent="."]
+scale = Vector2(1, 0.2)
+texture = SubResource("GradientTexture2D_hjceb")

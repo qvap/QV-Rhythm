@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://qvwv5661crc"]
+
+[ext_resource type="Script" path="res://Scripts/Notes/Bars.gd" id="1_hc8s2"]
+
+[node name="Bars" type="Node2D"]
+script = ExtResource("1_hc8s2")
+
+[node name="BarSpawn" type="Marker2D" parent="."]
+position = Vector2(0, -350)
+
+[node name="BarsHolder" type="Node2D" parent="."]

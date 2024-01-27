@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://dsv66nh8l8aaj"]
+
+[ext_resource type="Script" path="res://Scripts/Notes/Road.gd" id="1_0eda6"]
+
+[sub_resource type="Gradient" id="Gradient_1mj5s"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_34ktl"]
+gradient = SubResource("Gradient_1mj5s")
+width = 8
+height = 32
+
+[node name="NoteRoad" type="Node2D"]
+script = ExtResource("1_0eda6")
+
+[node name="NoteSpawn" type="Marker2D" parent="."]
+position = Vector2(0, -650)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(0, -4)
+rotation = -1.5708
+texture = SubResource("GradientTexture2D_34ktl")
