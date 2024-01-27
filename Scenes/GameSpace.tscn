@@ -9,6 +9,7 @@ script = ExtResource("1_qr6mb")
 
 [node name="MainCamera" parent="." instance=ExtResource("2_8bv23")]
 position = Vector2(0, -125)
+zoom = Vector2(2, 2)
 
 [node name="RoadMarkers" type="Node2D" parent="."]
 

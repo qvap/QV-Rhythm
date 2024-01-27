@@ -2,6 +2,14 @@ extends Node
 class_name ConductorScript
 
 # Отвечает не только за синхронизацию игры и музыки, но и за саму музыку
+# Принцип работы: за синхронизацию отвечают два параметра: song_position и chart_position
+# Чтобы иметь возможность добавлять ноты до того, как заиграет музыка, существует
+# функция play_song_with_offset(), которая запускает счёт, но не саму музыку,
+# при этом до начала музыки chart_position высчитывается через часы ОС, а после начала
+# подключается к методу через часы аудиосервера вместе с song_position
+
+# Тем самым дублируются переменные для song_position и chart_position
+# Да, это не очень хорошо, но тем самым мы можем репортить эти переменные асинхронно
 
 # ЭКСПОРТЫ
 
@@ -16,7 +24,7 @@ const NOTE_ZONE := NOTE_FRAMES / 60.0 # если 60 fps (но в _physics_proces
 @export var measure := 4
 
 # Поможет учесть задержку девайсов игроков
-@export var offset := 0.0 
+@export var offset := 5.0
 
 # Указывает АудиоПлеер и таймер начала
 @onready var MUSICSTREAMPLAYER := $Music
@@ -26,6 +34,10 @@ const NOTE_ZONE := NOTE_FRAMES / 60.0 # если 60 fps (но в _physics_proces
 signal beat_hit(beat_count)
 signal quarter_hit(quarter_count)
 signal measure_hit(measure_count)
+# Дупликаты для чарта
+signal chart_beat_hit(beat_count)
+signal chart_quarter_hit(quarter_count)
+signal chart_measure_hit(measure_count)
 
 # ПЕРЕМЕННЫЕ
 var running := false
@@ -53,8 +65,19 @@ var last_quarter := -1
 var current_measure := -1
 var last_measure := -1
 
+# Дупликаты для чартов
+var current_chart_beat := -1
+var last_chart_beat := -1
+
+var current_chart_quarter := -1
+var last_chart_quarter := -1
+
+var current_chart_measure := -1
+var last_chart_measure := -1
+
 var song_length: float
 var note_speed := Global.NOTE_SPEED_CONSTANT
+var engine_time_last_update := 0.0
 
 # ФУНКЦИИ
 
@@ -88,7 +111,9 @@ func play_song() -> void:
 
 # Запускает отсчёт, но запускает музыку с задержкой
 func play_song_with_offset() -> void:
+	chart_position -= offset + start_offset
 	playing = true
+	engine_time_last_update = Time.get_ticks_usec()
 	STARTTIMER.wait_time = note_speed
 	STARTTIMER.start()
 	await STARTTIMER.timeout
@@ -97,12 +122,19 @@ func play_song_with_offset() -> void:
 # Выставляет стандартные значения (a little stupid чтобы знать как это сократить)
 func reset_playback() -> void:
 	song_position = 0.0
+	chart_position = 0.0
 	current_beat = -1
 	last_beat = -1
 	current_quarter = -1
 	last_quarter = -1
 	current_measure = -1
 	last_measure = -1
+	current_chart_beat = -1
+	last_chart_beat = -1
+	current_chart_quarter = -1
+	last_chart_quarter = -1
+	current_chart_measure = -1
+	last_chart_measure = -1
 
 # Просто останавливает Stream и отключает процесс счёта в _physics_process
 func stop_song() -> void:
@@ -125,23 +157,39 @@ func _physics_process(_delta) -> void:
 	
 	# Считает только если играет музыка
 	if playing:
-		if song_occured:
-			song_position = MUSICSTREAMPLAYER.get_playback_position() + AudioServer.get_time_since_last_mix()
-			song_position -= AudioServer.get_output_latency() + offset + start_offset
-		else:
-			song_position -= AudioServer.get_time_to_next_mix()
-			song_position -= AudioServer.get_output_latency() + offset + start_offset
-		chart_position = song_position + note_speed
-		playback_time = MUSICSTREAMPLAYER.get_playback_position()
+		# Считает позицию музыки через часы аудиосистемы
+		song_position = MUSICSTREAMPLAYER.get_playback_position() + AudioServer.get_time_since_last_mix()
+		song_position -= AudioServer.get_output_latency() + offset + start_offset
 		
+		# Считает позицию чарта ПО АБСОЛЮТНО ДРУГОМУ МЕТОДУ ЧЕРЕЗ ЧАСЫ ОПЕРАЦИОНКИ
+		# По идее это может мне потом сломать игру, т.к. не факт что оно будет хорошо синхронизировано
+		# но вопрос: КАК ЕЩЁ ЭТО МНЕ РЕАЛИЗОВЫВАТЬ, Я ГОЛОВУ ЦЕЛЫЙ ДЕНЬ ЛОМАЮ
+		if song_occured:
+			chart_position = song_position + note_speed
+		else:
+			chart_position += (Time.get_ticks_usec() - engine_time_last_update) / 1_000_000.0
+			engine_time_last_update = Time.get_ticks_usec()
+		
+		playback_time = MUSICSTREAMPLAYER.get_playback_position()
+		print(chart_position)
 		current_measure = floor(song_position/s_per_measure)
 		report_measure()
 		
-		current_beat = floor(chart_position/s_per_beat)
+		current_beat = floor(song_position/s_per_beat)
 		report_beat()
 		
 		current_quarter = floor(song_position/s_per_quarter)
 		report_quarter()
+		
+		# Дупликаты для чарта
+		current_chart_measure = floor(chart_position/s_per_measure)
+		report_chart_measure()
+		
+		current_chart_beat = floor(chart_position/s_per_beat)
+		report_chart_beat()
+		
+		current_chart_quarter = floor(chart_position/s_per_quarter)
+		report_chart_quarter()
 		
 		if playback_time > song_length: stop_song()
 
@@ -149,6 +197,7 @@ func report_beat() -> void:
 	if last_beat < current_beat:
 		last_beat = current_beat
 		emit_signal("beat_hit", current_beat)
+		$SFX.play() # временная вставка
 	else: return
 
 func report_quarter() -> void:
@@ -161,4 +210,23 @@ func report_measure() -> void:
 	if last_measure < current_measure:
 		last_measure = current_measure
 		emit_signal("measure_hit", current_measure)
+	else: return
+
+# Дупликаты верхних функций, уже для chart_position
+func report_chart_beat() -> void:
+	if last_chart_beat < current_chart_beat:
+		last_chart_beat = current_chart_beat
+		emit_signal("chart_beat_hit", current_chart_beat)
+	else: return
+
+func report_chart_quarter() -> void:
+	if last_chart_quarter < current_chart_quarter:
+		last_chart_quarter = current_chart_quarter
+		emit_signal("chart_quarter_hit", current_chart_quarter)
+	else: return
+
+func report_chart_measure() -> void:
+	if last_chart_measure < current_chart_measure:
+		last_chart_measure = current_chart_measure
+		emit_signal("chart_measure_hit", current_chart_measure)
 	else: return

@@ -8,7 +8,7 @@ var BARSPRITE = preload("res://Scenes/Notes/BarSprite.tscn")
 @onready var BARSHOLDER = $BarsHolder
 
 func _ready() -> void:
-	Conductor.connect("beat_hit", chart_beat_hit)
+	Conductor.connect("chart_beat_hit", chart_beat_hit)
 
 func chart_beat_hit(_beat) -> void:
 	var barsprite_init = BARSPRITE.instantiate()
