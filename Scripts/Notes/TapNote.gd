@@ -3,6 +3,7 @@ class_name Note
 
 @onready var SKIN := $Skin
 var SPAWN_POSITION : Vector2
+var SPAWN_TIME := Conductor.chart_position
 var ROAD : Node2D
 var DISTANCE_TO_HIT : float
 var NOTE_SPEED : float # скорость в пикселях до удара

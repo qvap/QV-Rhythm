@@ -13,10 +13,6 @@ class_name ConductorScript
 
 # ЭКСПОРТЫ
 
-# Впихну в начало кода все переменные для нот
-const NOTE_FRAMES := 10
-const NOTE_ZONE := NOTE_FRAMES / 60.0 # если 60 fps (но в _physics_process и так)
-
 # Экспорт переменных для удобной настройки
 @export_group("Conductor")
 @export var bpm := 114.0

@@ -13,7 +13,9 @@ var MAPDATA # Информация о карте (map_name, creator_name, diffic
 func load_game(custom_map_folder_name: String) -> void:
 	var mapdata = Tools.parse_json("res://CustomMaps/"+custom_map_folder_name+"/mapdata.json")
 	
+	# Добавляет нужные значения в Global для простого отслеживания
 	Global.CURRENT_NOTE_SPEED = mapdata["note_speed"]
+	Global.CURRENT_CHART_SIZE = mapdata["chart_size"]
 	
 	instantiate_roads(mapdata["chart_size"])
 	
