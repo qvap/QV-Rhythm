@@ -5,6 +5,7 @@
 
 [node name="Conductor" type="Node"]
 script = ExtResource("1_sc76y")
+offset = 0.01
 
 [node name="Music" type="AudioStreamPlayer" parent="."]
 bus = &"Music"

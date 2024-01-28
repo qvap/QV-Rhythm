@@ -5,12 +5,16 @@ class_name GameSpace
 
 @onready var CAMERA := $MainCamera # А тут нод камеры
 var ROAD := preload("res://Scenes/Notes/Road.tscn")
+var ROADS_MASSIVE : Array
 @onready var ROADS_HOLDER := $Roads
 var MAPDATA # Информация о карте (map_name, creator_name, difficulty, chart_size)
 
 # Загружает абсолютно ВСЁ связанное с картой
 func load_game(custom_map_folder_name: String) -> void:
 	var mapdata = Tools.parse_json("res://CustomMaps/"+custom_map_folder_name+"/mapdata.json")
+	
+	Global.CURRENT_NOTE_SPEED = mapdata["note_speed"]
+	
 	instantiate_roads(mapdata["chart_size"])
 	
 	Conductor.load_song_from_json(mapdata, custom_map_folder_name)
@@ -42,7 +46,15 @@ func instantiate_roads(chart_size: int) -> void:
 		road_node.road_index = index
 		road_node.name = "Road"+str(index)
 		road_node.ROAD_POSITION_MARKER = CHARTMARKERS.get_child(index)
+		ROADS_MASSIVE.push_back(road_node)
 		ROADS_HOLDER.add_child(road_node)
 
 func _ready() -> void:
+	Conductor.connect("chart_beat_hit", chart_beat_hit)
+	Conductor.connect("chart_measure_hit", chart_measure_hit)
 	load_game("TestMap")
+
+func chart_beat_hit(_dull) -> void:
+	ROADS_MASSIVE[0].spawn_note()
+func chart_measure_hit(_dull) -> void:
+	ROADS_MASSIVE[3].spawn_note()

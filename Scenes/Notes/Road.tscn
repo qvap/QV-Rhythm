@@ -14,9 +14,11 @@ height = 32
 script = ExtResource("1_0eda6")
 
 [node name="NoteSpawn" type="Marker2D" parent="."]
-position = Vector2(0, -650)
+position = Vector2(0, -450)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(0, -4)
+position = Vector2(0, -3)
 rotation = -1.5708
 texture = SubResource("GradientTexture2D_34ktl")
+
+[node name="NoteHolder" type="Node2D" parent="."]

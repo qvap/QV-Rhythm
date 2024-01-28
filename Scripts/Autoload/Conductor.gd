@@ -24,7 +24,7 @@ const NOTE_ZONE := NOTE_FRAMES / 60.0 # если 60 fps (но в _physics_proces
 @export var measure := 4
 
 # Поможет учесть задержку девайсов игроков
-@export var offset := 5.0
+@export var offset := 0.0
 
 # Указывает АудиоПлеер и таймер начала
 @onready var MUSICSTREAMPLAYER := $Music
@@ -52,10 +52,13 @@ var playback_time := 0.0
 
 # Добавляю ещё одну переменную, так как хочу отделить время проигрывания от времени кондуктора
 # (Это поможет использовать задержку начала отсчёта музыки)
-var song_position := 0.0
+# -1, потому что если выставлять ноль, то оно будет репортить первый бит сразу
+var song_position := -1.0
 
-var chart_position := 0.0
+# -100.0 чтобы учесть, что он должен начаться в первый фрейм запуска playing
+var chart_position := -100.0
 
+# Всё настроено на -1, чтобы репортить начальное значение 0
 var current_beat := -1
 var last_beat := -1
 
@@ -103,6 +106,15 @@ func load_song(SONG_PATH: String, is_custom_map_path := false) -> void:
 		MUSICSTREAMPLAYER.stream = load("res://CustomMaps/"+SONG_PATH+"/music.mp3")
 	song_length = MUSICSTREAMPLAYER.stream.get_length()
 
+# Облегчает загрузку музыки, если используется CustomMap JSON файл
+func load_song_from_json(json_dictionary: Dictionary, folder_name: String) -> void:
+	load_song(folder_name, true)
+	bpm = json_dictionary["music_bpm"]
+	measure = json_dictionary["music_measure"]
+	start_offset = json_dictionary["music_offset"]
+	note_speed = clamp(json_dictionary["note_speed"] * Global.NOTE_SPEED_CONSTANT, 0.25, 3.0) # ограничения скорости нот
+	update()
+
 # Запускает музыку если есть Stream и запускает процесс счёта в _physics_process
 func play_song() -> void:
 	song_occured = true
@@ -119,10 +131,16 @@ func play_song_with_offset() -> void:
 	await STARTTIMER.timeout
 	play_song()
 
+# Просто останавливает Stream и отключает процесс счёта в _physics_process
+func stop_song() -> void:
+	MUSICSTREAMPLAYER.stop()
+	MUSICSTREAMPLAYER.stream = null
+	playing = false
+
 # Выставляет стандартные значения (a little stupid чтобы знать как это сократить)
 func reset_playback() -> void:
-	song_position = 0.0
-	chart_position = 0.0
+	song_position = -1.0
+	chart_position = -100.0
 	current_beat = -1
 	last_beat = -1
 	current_quarter = -1
@@ -136,42 +154,28 @@ func reset_playback() -> void:
 	current_chart_measure = -1
 	last_chart_measure = -1
 
-# Просто останавливает Stream и отключает процесс счёта в _physics_process
-func stop_song() -> void:
-	MUSICSTREAMPLAYER.stop()
-	MUSICSTREAMPLAYER.stream = null
-	playing = false
-
-# Облегчает загрузку музыки, если используется CustomMap JSON файл
-func load_song_from_json(json_dictionary: Dictionary, folder_name: String) -> void:
-	load_song(folder_name, true)
-	bpm = json_dictionary["music_bpm"]
-	measure = json_dictionary["music_measure"]
-	start_offset = json_dictionary["music_offset"]
-	note_speed = json_dictionary["note_speed"] * Global.NOTE_SPEED_CONSTANT
-	update()
-
 func _physics_process(_delta) -> void:
 	# Не идёт дальше, если модуль не запущен
 	if !running: return
 	
 	# Считает только если играет музыка
 	if playing:
-		# Считает позицию музыки через часы аудиосистемы
-		song_position = MUSICSTREAMPLAYER.get_playback_position() + AudioServer.get_time_since_last_mix()
-		song_position -= AudioServer.get_output_latency() + offset + start_offset
-		
-		# Считает позицию чарта ПО АБСОЛЮТНО ДРУГОМУ МЕТОДУ ЧЕРЕЗ ЧАСЫ ОПЕРАЦИОНКИ
-		# По идее это может мне потом сломать игру, т.к. не факт что оно будет хорошо синхронизировано
-		# но вопрос: КАК ЕЩЁ ЭТО МНЕ РЕАЛИЗОВЫВАТЬ, Я ГОЛОВУ ЦЕЛЫЙ ДЕНЬ ЛОМАЮ
 		if song_occured:
+			# Считает позицию музыки через часы аудиосистемы
+			song_position = MUSICSTREAMPLAYER.get_playback_position() + AudioServer.get_time_since_last_mix()
+			song_position -= AudioServer.get_output_latency() + offset + start_offset
+		
+			# Считает позицию чарта ПО АБСОЛЮТНО ДРУГОМУ МЕТОДУ ЧЕРЕЗ ЧАСЫ ОПЕРАЦИОНКИ
+			# По идее это может мне потом сломать игру, т.к. не факт что оно будет хорошо синхронизировано
+			# но вопрос: КАК ЕЩЁ ЭТО МНЕ РЕАЛИЗОВЫВАТЬ, Я ГОЛОВУ ЦЕЛЫЙ ДЕНЬ ЛОМАЮ
 			chart_position = song_position + note_speed
 		else:
+			if chart_position <= -100.0:
+				chart_position += 100.0
 			chart_position += (Time.get_ticks_usec() - engine_time_last_update) / 1_000_000.0
 			engine_time_last_update = Time.get_ticks_usec()
 		
 		playback_time = MUSICSTREAMPLAYER.get_playback_position()
-		print(chart_position)
 		current_measure = floor(song_position/s_per_measure)
 		report_measure()
 		

@@ -8,3 +8,6 @@ class_name BarSprite
 func _process(_delta) -> void:
 	if position.y == 0.0:
 		ANIMATION.play("disappear")
+
+func _ready() -> void:
+	modulate.a = 0.0
