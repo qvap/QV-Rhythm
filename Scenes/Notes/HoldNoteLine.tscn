@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4yiiubjo2ld0"]
+
+[sub_resource type="Gradient" id="Gradient_yvvbf"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.25)
+
+[node name="HoldNoteLine" type="Line2D"]
+points = PackedVector2Array(0, 0, 0, 0)
+width = 32.0
+default_color = Color(1, 1, 1, 0.501961)
+gradient = SubResource("Gradient_yvvbf")

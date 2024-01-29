@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://ckagi3e0y0eyx"]
+
+[ext_resource type="Script" path="res://Scripts/Notes/HoldNote.gd" id="1_j0ydc"]
+
+[sub_resource type="Gradient" id="Gradient_5xj4x"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_m32y7"]
+gradient = SubResource("Gradient_5xj4x")
+
+[node name="HoldNote" type="Node2D"]
+script = ExtResource("1_j0ydc")
+
+[node name="Skin" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.1)
+texture = SubResource("GradientTexture2D_m32y7")

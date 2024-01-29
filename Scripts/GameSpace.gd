@@ -7,17 +7,20 @@ class_name GameSpace
 var ROAD := preload("res://Scenes/Notes/Road.tscn")
 var ROADS_MASSIVE : Array
 @onready var ROADS_HOLDER := $Roads
-var MAPDATA # Информация о карте (map_name, creator_name, difficulty, chart_size)
 
 # Загружает абсолютно ВСЁ связанное с картой
 func load_game(custom_map_folder_name: String) -> void:
 	var mapdata = Tools.parse_json("res://CustomMaps/"+custom_map_folder_name+"/mapdata.json")
+	var mapchart = Tools.parse_json("res://CustomMaps/"+custom_map_folder_name+"/mapchart0.json")
 	
 	# Добавляет нужные значения в Global для простого отслеживания
-	Global.CURRENT_NOTE_SPEED = mapdata["note_speed"]
 	Global.CURRENT_CHART_SIZE = mapdata["chart_size"]
 	
 	instantiate_roads(mapdata["chart_size"])
+	
+	# Загружает на каждую дорогу свойственные ей ноты
+	for note in mapchart["Notes"]:
+		ROADS_MASSIVE[note[Global.NOTE_CHART_STRUCTURE["road"]]].ALL_NOTES.push_back(note)
 	
 	Conductor.load_song_from_json(mapdata, custom_map_folder_name)
 	Conductor.run()
@@ -52,11 +55,4 @@ func instantiate_roads(chart_size: int) -> void:
 		ROADS_HOLDER.add_child(road_node)
 
 func _ready() -> void:
-	Conductor.connect("chart_beat_hit", chart_beat_hit)
-	Conductor.connect("chart_measure_hit", chart_measure_hit)
 	load_game("TestMap")
-
-func chart_beat_hit(_dull) -> void:
-	ROADS_MASSIVE[0].spawn_note()
-func chart_measure_hit(_dull) -> void:
-	ROADS_MASSIVE[3].spawn_note()
