@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://bm165g1n3rtgj"]
+[gd_scene load_steps=5 format=3 uid="uid://bm165g1n3rtgj"]
 
 [ext_resource type="Script" path="res://Scripts/GameSpace.gd" id="1_qr6mb"]
 [ext_resource type="PackedScene" uid="uid://dknxbqfwv2jca" path="res://Scenes/Game/MainCamera.tscn" id="2_8bv23"]
+[ext_resource type="PackedScene" uid="uid://w10blv3h7l5d" path="res://Scenes/GameSpaceUI.tscn" id="3_gs46e"]
 [ext_resource type="PackedScene" uid="uid://qvwv5661crc" path="res://Scenes/Notes/Bars.tscn" id="3_mh8f0"]
 
 [node name="GameSpace" type="Node2D"]
@@ -10,6 +11,8 @@ script = ExtResource("1_qr6mb")
 [node name="MainCamera" parent="." instance=ExtResource("2_8bv23")]
 position = Vector2(0, -125)
 zoom = Vector2(2, 2)
+
+[node name="GameSpaceUI" parent="." instance=ExtResource("3_gs46e")]
 
 [node name="RoadMarkers" type="Node2D" parent="."]
 

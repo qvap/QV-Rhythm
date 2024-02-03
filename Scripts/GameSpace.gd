@@ -5,11 +5,12 @@ class_name GameSpace
 
 @onready var CAMERA := $MainCamera # А тут нод камеры
 var ROAD := preload("res://Scenes/Notes/Road.tscn")
-var ROADS_MASSIVE : Array
+var ROADS_MASSIVE : Array[Road]
 @onready var ROADS_HOLDER := $Roads
 
 # Загружает абсолютно ВСЁ связанное с картой
 func load_game(custom_map_folder_name: String) -> void:
+	Scoring.current_score = 0
 	var mapdata = Tools.parse_json("res://CustomMaps/"+custom_map_folder_name+"/mapdata.json")
 	var mapchart = Tools.parse_json("res://CustomMaps/"+custom_map_folder_name+"/mapchart0.json")
 	
@@ -20,7 +21,26 @@ func load_game(custom_map_folder_name: String) -> void:
 	
 	# Загружает на каждую дорогу свойственные ей ноты
 	for note in mapchart["Notes"]:
-		ROADS_MASSIVE[note[Global.NOTE_CHART_STRUCTURE["road"]]].ALL_NOTES.push_back(note)
+		var note_type : int = note[Global.NOTE_CHART_STRUCTURE.TYPE]
+		var note_road : int = note[Global.NOTE_CHART_STRUCTURE.ROAD]
+		var note_spawn_quarter : int = note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN]
+		var note_additional_info : int
+		if len(note) > 3:
+			note_additional_info = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]
+		match note_type:
+			Global.NOTE_TYPE.TAPNOTE:
+				ROADS_MASSIVE[note_road].ALL_NOTES.push_back(note)
+			Global.NOTE_TYPE.HOLDNOTE:
+				ROADS_MASSIVE[note_road].ALL_NOTES.push_back(note)
+				for tick in range(note_additional_info+1):
+					if tick == note_additional_info:
+						ROADS_MASSIVE[note_road].ALL_NOTES.push_back([Global.NOTE_TYPE.HOLDNOTEEND,\
+						note_spawn_quarter+tick, note_road])
+					elif tick != 0:
+						ROADS_MASSIVE[note_road].ALL_NOTES.push_back([Global.NOTE_TYPE.HOLDNOTETICK,\
+						note_spawn_quarter+tick, note_road])
+					else:
+						continue
 	
 	Conductor.load_song_from_json(mapdata, custom_map_folder_name)
 	Conductor.run()

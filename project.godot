@@ -15,7 +15,13 @@ run/main_scene="res://Scenes/GameSpace.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="QvRhythmData"
 config/features=PackedStringArray("4.2", "Forward Plus")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/show_image=false
 config/icon="res://icon.svg"
+
+[audio]
+
+driver/output_latency=10
 
 [autoload]
 
@@ -25,11 +31,31 @@ Conductor="*res://Scenes/Autoload/Conductor.tscn"
 Settings="*res://Scripts/Autoload/Settings.gd"
 Scoring="*res://Scripts/Autoload/Scoring.gd"
 
+[debug]
+
+settings/crash_handler/message="Если вы столкнулись с ошибкой, сообщите об этом разработчику"
+
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/size/resizable=false
+window/vsync/vsync_mode=0
+
+[editor]
+
+naming/default_signal_callback_name="{signal_name}"
+naming/default_signal_callback_to_self_name="{signal_name}"
+naming/scene_name_casing=1
+
+[file_customization]
+
+folder_colors={
+"res://Assets/": "green",
+"res://CustomMaps/": "orange",
+"res://Scenes/": "purple",
+"res://Scripts/": "yellow",
+"res://addons/": "gray"
+}
 
 [filesystem]
 
