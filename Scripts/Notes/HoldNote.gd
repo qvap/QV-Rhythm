@@ -22,8 +22,7 @@ func setup_line() -> void:
 	add_child(LINE_NODE)
 	LINE_NODE.top_level = true
 	LINE_NODE.points[0] = Vector2(0.0, 0.0)
-	LINE_NODE.points[1] = Vector2(0.0, 0.0 - (NOTE_SPEED *\
-	(Conductor.s_per_quarter * NOTE_LENGTH)))
+	LINE_NODE.points[1] = Vector2(0.0, 0.0 - (NOTE_SPEED * (Conductor.s_per_quarter * NOTE_LENGTH)))
 	LINE_INITIALIZED = true
 
 func _process(delta: float) -> void:
@@ -42,7 +41,7 @@ func miss_note() -> void:
 		Global.NOTE_TYPE.HOLDNOTE:
 			LINE_NODE.modulate.a = 0.0
 			modulate.a = 0.5
-		Global.NOTE_TYPE.HOLDNOTETICK:
+		Global.CONTROL_TYPE.HOLDNOTETICK:
 			queue_free()
-		Global.NOTE_TYPE.HOLDNOTEEND:
+		Global.CONTROL_TYPE.HOLDNOTEEND:
 			queue_free()

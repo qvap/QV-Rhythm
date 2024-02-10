@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://dewkv0vqn744v"]
+
+[ext_resource type="Script" path="res://Scripts/UI/VideoPlayer.gd" id="1_cseb6"]
+[ext_resource type="Shader" path="res://Assets/Shaders/Blur.gdshader" id="2_tallr"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2lpnb"]
+shader = ExtResource("2_tallr")
+shader_parameter/blur = 0.0
+
+[node name="VideoPlayer" type="Container"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_cseb6")
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer" parent="."]
+layout_mode = 2
+volume_db = -80.0
+
+[node name="Blur" type="ColorRect" parent="VideoStreamPlayer"]
+material = SubResource("ShaderMaterial_2lpnb")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

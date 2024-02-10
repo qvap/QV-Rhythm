@@ -5,7 +5,7 @@ class_name ConductorScript
 # Принцип работы: за синхронизацию отвечают два параметра: song_position и chart_position
 # Чтобы иметь возможность добавлять ноты до того, как заиграет музыка, существует
 # функция play_song_with_offset(), которая запускает счёт, но не саму музыку,
-# при этом до начала музыки chart_position высчитывается через часы ОС, а после начала
+# при этом до начала музыки chart_position высчитывается через delta, а после начала
 # подключается к методу через часы аудиосервера вместе с song_position
 
 # Тем самым дублируются переменные для song_position и chart_position
@@ -25,6 +25,8 @@ class_name ConductorScript
 # Указывает АудиоПлеер и таймер начала
 @onready var MUSICSTREAMPLAYER := $Music
 @onready var STARTTIMER := $StartTimer
+@onready var HITSOUND := $Hitsound
+
 
 # Сигналы для подключения
 signal beat_hit(beat_count)
@@ -76,7 +78,6 @@ var last_chart_measure := -1
 
 var song_length: float
 var note_speed := Global.NOTE_SPEED_CONSTANT
-var engine_time_last_update := 0.0
 
 # ФУНКЦИИ
 
@@ -121,7 +122,6 @@ func play_song() -> void:
 func play_song_with_offset() -> void:
 	chart_position -= offset + start_offset
 	playing = true
-	engine_time_last_update = Time.get_ticks_usec()
 	STARTTIMER.wait_time = note_speed
 	STARTTIMER.start()
 	await STARTTIMER.timeout
@@ -132,6 +132,9 @@ func stop_song() -> void:
 	MUSICSTREAMPLAYER.stop()
 	MUSICSTREAMPLAYER.stream = null
 	playing = false
+
+func play_hitsound() -> void:
+	HITSOUND.play()
 
 # Выставляет стандартные значения (a little stupid чтобы знать как это сократить)
 func reset_playback() -> void:
@@ -150,7 +153,7 @@ func reset_playback() -> void:
 	current_chart_measure = -1
 	last_chart_measure = -1
 
-func _physics_process(_delta) -> void:
+func _physics_process(delta) -> void:
 	# Не идёт дальше, если модуль не запущен
 	if !running: return
 	
@@ -168,8 +171,7 @@ func _physics_process(_delta) -> void:
 		else:
 			if chart_position <= -100.0:
 				chart_position += 100.0
-			chart_position += (Time.get_ticks_usec() - engine_time_last_update) / 1_000_000.0
-			engine_time_last_update = Time.get_ticks_usec()
+			chart_position += delta
 		
 		playback_time = MUSICSTREAMPLAYER.get_playback_position()
 		current_measure = floor(song_position/s_per_measure)
@@ -197,7 +199,6 @@ func report_beat() -> void:
 	if last_beat < current_beat:
 		last_beat = current_beat
 		emit_signal("beat_hit", current_beat)
-		$SFX.play() # временная вставка
 	else: return
 
 func report_quarter() -> void:

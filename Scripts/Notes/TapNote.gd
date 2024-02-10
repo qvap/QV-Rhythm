@@ -1,11 +1,12 @@
 extends Node2D
 class_name Note
 
-# Базовая нота. Имеет скин, расчёт и движение (Можно использовать как основу для других нод
+# Базовая нота. Имеет скин, расчёт и движение (Можно использовать как основу для других нот)
 
 @onready var SKIN := $Skin
 var SPAWN_POSITION : Vector2
 var SPAWN_TIME := Conductor.chart_position
+var SPAWN_QUARTERS: int
 var ROAD : Road
 var DISTANCE_TO_HIT : float
 var NOTE_SPEED : float # скорость в пикселях до удара

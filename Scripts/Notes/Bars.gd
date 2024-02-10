@@ -14,6 +14,3 @@ func chart_beat_hit(_beat) -> void:
 	var barsprite_init = BARSPRITE.instantiate()
 	barsprite_init.position = BARSPAWN.position
 	BARSHOLDER.add_child(barsprite_init)
-	var tween = create_tween()
-	tween.tween_property(barsprite_init, "position:y", 0.0, Conductor.note_speed).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
-	tween.parallel().tween_property(barsprite_init, "modulate:a", 1.0, Conductor.note_speed)

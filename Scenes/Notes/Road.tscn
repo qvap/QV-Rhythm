@@ -2,13 +2,11 @@
 
 [ext_resource type="Script" path="res://Scripts/Notes/Road.gd" id="1_0eda6"]
 
-[sub_resource type="Gradient" id="Gradient_1mj5s"]
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+[sub_resource type="Gradient" id="Gradient_mum26"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_34ktl"]
-gradient = SubResource("Gradient_1mj5s")
-width = 8
-height = 32
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_k6son"]
+gradient = SubResource("Gradient_mum26")
 
 [node name="NoteRoad" type="Node2D"]
 script = ExtResource("1_0eda6")
@@ -17,8 +15,8 @@ script = ExtResource("1_0eda6")
 position = Vector2(0, -450)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(0, -3)
-rotation = -1.5708
-texture = SubResource("GradientTexture2D_34ktl")
+modulate = Color(1, 1, 1, 0.5)
+scale = Vector2(0.5, 0.1)
+texture = SubResource("GradientTexture2D_k6son")
 
 [node name="NoteHolder" type="Node2D" parent="."]

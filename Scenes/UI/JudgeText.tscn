@@ -1,0 +1,43 @@
+[gd_scene load_steps=5 format=3 uid="uid://cdmf5xetoqggd"]
+
+[ext_resource type="Script" path="res://Scripts/UI/JudgeText.gd" id="1_2w8c7"]
+[ext_resource type="FontFile" uid="uid://cg80udnpllu1r" path="res://Assets/Fonts/MusticaPro.otf" id="1_mf8fd"]
+
+[sub_resource type="Gradient" id="Gradient_4usuh"]
+interpolation_mode = 2
+offsets = PackedFloat32Array(0.2, 0.5, 0.8)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.4, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_kodcd"]
+gradient = SubResource("Gradient_4usuh")
+width = 500
+height = 50
+use_hdr = true
+
+[node name="JudgeText" type="Label"]
+custom_minimum_size = Vector2(500, 50)
+offset_right = 500.0
+offset_bottom = 50.0
+scale = Vector2(1, 1e-05)
+pivot_offset = Vector2(250, 25)
+size_flags_vertical = 1
+theme_override_fonts/font = ExtResource("1_mf8fd")
+theme_override_font_sizes/font_size = 32
+text = "PERFECTION"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("1_2w8c7")
+
+[node name="Flash" type="TextureRect" parent="."]
+show_behind_parent = true
+custom_minimum_size = Vector2(500, 50)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(1e-05, 1)
+pivot_offset = Vector2(250, 25)
+texture = SubResource("GradientTexture2D_kodcd")
+
+[node name="DisappearTimer" type="Timer" parent="."]
+wait_time = 1.5
+one_shot = true
