@@ -8,5 +8,6 @@
 	"music_measure": 4,
 	"note_speed": 1.0,
 	"has_video": false,
-	"video_blur_amount": 0.0
+	"video_blur_amount": 0.0,
+	"has_scene": true
 }

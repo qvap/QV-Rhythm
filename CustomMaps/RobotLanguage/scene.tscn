@@ -1,25 +1,44 @@
-[gd_scene load_steps=6 format=3 uid="uid://bm165g1n3rtgj"]
+[gd_scene load_steps=5 format=3 uid="uid://c6lngjaav6uc8"]
 
-[ext_resource type="Script" path="res://Scripts/GameSpace.gd" id="1_qr6mb"]
-[ext_resource type="PackedScene" uid="uid://dknxbqfwv2jca" path="res://Scenes/Game/MainCamera.tscn" id="2_8bv23"]
-[ext_resource type="PackedScene" uid="uid://w10blv3h7l5d" path="res://Scenes/GameSpaceUI.tscn" id="3_gs46e"]
-[ext_resource type="PackedScene" uid="uid://qvwv5661crc" path="res://Scenes/Notes/Bars.tscn" id="3_mh8f0"]
-[ext_resource type="PackedScene" uid="uid://dewkv0vqn744v" path="res://Scenes/UI/VideoPlayer.tscn" id="4_7foor"]
+[ext_resource type="Script" path="res://CustomMaps/RobotLanguage/scene.gd" id="1_tr4vg"]
 
-[node name="GameSpace" type="Node2D"]
-script = ExtResource("1_qr6mb")
+[sub_resource type="Animation" id="Animation_3urcn"]
+resource_name = "default"
+length = 50.0
+step = 0.05
 
-[node name="MainCamera" parent="." instance=ExtResource("2_8bv23")]
+[sub_resource type="Animation" id="Animation_qj4ec"]
+length = 0.001
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_myjqf"]
+_data = {
+"RESET": SubResource("Animation_qj4ec"),
+"default": SubResource("Animation_3urcn")
+}
+
+[node name="Scene" type="Node2D"]
+script = ExtResource("1_tr4vg")
+
+[node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(0, -125)
+enabled = false
 zoom = Vector2(3, 3)
 
-[node name="GameSpaceUI" parent="." instance=ExtResource("3_gs46e")]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_myjqf")
+}
 
-[node name="VideoLayer" type="CanvasLayer" parent="."]
-layer = -100
+[node name="ForSyncing" type="AudioStreamPlayer" parent="."]
 
-[node name="VideoPlayer" parent="VideoLayer" instance=ExtResource("4_7foor")]
-metadata/_edit_use_anchors_ = true
+[node name="Above_UI" type="CanvasLayer" parent="."]
+layer = 101
+
+[node name="Under_UI" type="CanvasLayer" parent="."]
+layer = 99
+
+[node name="Above_BG" type="CanvasLayer" parent="."]
+layer = -99
 
 [node name="RoadMarkers" type="Node2D" parent="."]
 
@@ -49,7 +68,6 @@ position = Vector2(-50, 0)
 position = Vector2(50, 0)
 
 [node name="4KChartRoadMarkers" type="Node2D" parent="RoadMarkers"]
-visible = false
 
 [node name="ChartRoad1" type="Marker2D" parent="RoadMarkers/4KChartRoadMarkers"]
 position = Vector2(-75, 0)
@@ -100,9 +118,3 @@ position = Vector2(75, 0)
 
 [node name="ChartRoad6" type="Marker2D" parent="RoadMarkers/6KChartRoadMarkers"]
 position = Vector2(125, 0)
-
-[node name="Roads" type="Node2D" parent="."]
-
-[node name="Bars" parent="." instance=ExtResource("3_mh8f0")]
-
-[node name="MapSceneHolder" type="Node2D" parent="."]

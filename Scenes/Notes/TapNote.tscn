@@ -14,3 +14,6 @@ script = ExtResource("1_xka3s")
 [node name="Skin" type="Sprite2D" parent="."]
 scale = Vector2(0.5, 0.1)
 texture = SubResource("GradientTexture2D_hjceb")
+
+[node name="Disappear" type="Timer" parent="."]
+one_shot = true

@@ -1,0 +1,150 @@
+[gd_scene load_steps=3 format=3 uid="uid://clnqinow7adi1"]
+
+[ext_resource type="Script" path="res://Scripts/Editor/ChartEditor.gd" id="1_ghr7u"]
+[ext_resource type="PackedScene" uid="uid://etqq0vllybqf" path="res://Scenes/Editor/ChartEditorSideBar.tscn" id="2_4hqxn"]
+
+[node name="ChartEditor" type="Node2D"]
+script = ExtResource("1_ghr7u")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="ChartEditorSideBar" parent="UI" instance=ExtResource("2_4hqxn")]
+
+[node name="MarginContainer" type="MarginContainer" parent="UI"]
+custom_minimum_size = Vector2(40, 500)
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -250.0
+offset_right = 40.0
+offset_bottom = 250.0
+grow_vertical = 2
+rotation = 3.14159
+pivot_offset = Vector2(20, 250)
+
+[node name="ChartSlider" type="VSlider" parent="UI/MarginContainer"]
+layout_mode = 2
+scrollable = false
+ticks_on_borders = true
+
+[node name="AboveLine" type="Container" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CurrentChunk" type="Label" parent="UI/AboveLine"]
+custom_minimum_size = Vector2(550, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Current measure (chunk):"
+
+[node name="SaveChartLabel" type="Label" parent="UI"]
+modulate = Color(1, 1, 1, 0)
+anchors_preset = -1
+anchor_left = 0.812
+anchor_top = 0.898
+anchor_right = 0.889
+anchor_bottom = 0.898
+offset_left = -51.0
+offset_top = -23.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 32
+text = "Saved!"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -130.5
+offset_right = 130.5
+offset_bottom = 90.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="UI/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "BPM
+"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BPMFarLeftButton" type="Button" parent="UI/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "<<"
+
+[node name="BPMLeftButton" type="Button" parent="UI/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "<"
+
+[node name="BPMLabel" type="Label" parent="UI/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "130"
+
+[node name="BPMRightButton" type="Button" parent="UI/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = ">"
+
+[node name="BPMFarRightButton" type="Button" parent="UI/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+action_mode = 0
+text = ">>"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI"]
+anchors_preset = -1
+anchor_left = 0.889
+anchor_top = 1.0
+anchor_right = 0.889
+anchor_bottom = 1.0
+offset_left = -404.0
+offset_top = -100.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="ClearAllButton" type="Button" parent="UI/HBoxContainer"]
+custom_minimum_size = Vector2(200, 100)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "Clear All"
+
+[node name="SaveChartButton" type="Button" parent="UI/HBoxContainer"]
+custom_minimum_size = Vector2(200, 100)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "Save Chart"
+
+[node name="GridHolder" type="Node2D" parent="."]
+position = Vector2(250, 0)
+
+[connection signal="drag_ended" from="UI/MarginContainer/ChartSlider" to="." method="slider_released"]
+[connection signal="value_changed" from="UI/MarginContainer/ChartSlider" to="." method="slider_changed"]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/BPMFarLeftButton" to="." method="change_bpm" binds= [true, true]]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/BPMLeftButton" to="." method="change_bpm" binds= [true, false]]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/BPMRightButton" to="." method="change_bpm" binds= [false, false]]
+[connection signal="pressed" from="UI/VBoxContainer/HBoxContainer/BPMFarRightButton" to="." method="change_bpm" binds= [false, true]]
+[connection signal="pressed" from="UI/HBoxContainer/ClearAllButton" to="." method="clear_all"]
+[connection signal="pressed" from="UI/HBoxContainer/SaveChartButton" to="." method="save_map"]

@@ -8,8 +8,10 @@ var LINE := preload("res://Scenes/Notes/HoldNoteLine.tscn")
 var LINE_INITIALIZED := false
 var HOLDING := false
 var LINE_NODE : Line2D
+var HOLD_TO_CONTROL: HoldNote
 
 func _ready() -> void:
+	DISAPPEAR_TIMER = $Disappear
 	SKIN = $Skin
 	initialize_note()
 	if NOTE_TYPE == Global.NOTE_TYPE.HOLDNOTE:
@@ -32,16 +34,20 @@ func _process(delta: float) -> void:
 	LINE_NODE.global_position = global_position
 	if HOLDING:
 		if !(LINE_NODE.points[0].y <= LINE_NODE.points[1].y):
-			LINE_NODE.points[0] = Vector2(0.0, 0.0 - global_position.y)
+			LINE_NODE.points[0] = Vector2(0.0, ROAD_POSITION.y - global_position.y)
 		else:
 			LINE_NODE.points[0] = Vector2(0.0, LINE_NODE.points[1].y)
 
 func miss_note() -> void:
 	match NOTE_TYPE:
 		Global.NOTE_TYPE.HOLDNOTE:
-			LINE_NODE.modulate.a = 0.0
+			LINE_NODE.modulate.a = 0.5
 			modulate.a = 0.5
-		Global.CONTROL_TYPE.HOLDNOTETICK:
+			DISAPPEAR_TIMER.start()
+		Global.CONTROL_TYPE.HOLDCONTROL:
+			HOLD_TO_CONTROL.miss_note()
 			queue_free()
-		Global.CONTROL_TYPE.HOLDNOTEEND:
+		Global.CONTROL_TYPE.HOLDCONTROLTICK:
+			queue_free()
+		Global.CONTROL_TYPE.HOLDCONTROLEND:
 			queue_free()

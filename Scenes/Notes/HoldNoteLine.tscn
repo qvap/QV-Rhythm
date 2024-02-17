@@ -8,4 +8,3 @@ points = PackedVector2Array(0, 0, 0, 0)
 width = 32.0
 default_color = Color(1, 1, 1, 0.501961)
 gradient = SubResource("Gradient_yvvbf")
-begin_cap_mode = 2

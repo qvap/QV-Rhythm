@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://djduj8cbooinm"]
+
+[ext_resource type="Script" path="res://Scripts/Editor/NoteIndicator.gd" id="1_iqqdt"]
+
+[sub_resource type="Gradient" id="Gradient_ossks"]
+offsets = PackedFloat32Array(0.425641, 0.851282)
+colors = PackedColorArray(1, 1, 1, 1, 0.99, 0.69795, 0.4059, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_74u77"]
+gradient = SubResource("Gradient_ossks")
+use_hdr = true
+
+[node name="NoteIndicator" type="Node2D"]
+position = Vector2(115, 83)
+script = ExtResource("1_iqqdt")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_74u77")
+
+[node name="Label" type="Label" parent="."]
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+pivot_offset = Vector2(32, 32)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+vertical_alignment = 1

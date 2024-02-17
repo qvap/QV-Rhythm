@@ -36,6 +36,8 @@ signal measure_hit(measure_count)
 signal chart_beat_hit(beat_count)
 signal chart_quarter_hit(quarter_count)
 signal chart_measure_hit(measure_count)
+# Для сцены краты
+signal music_started()
 
 # ПЕРЕМЕННЫЕ
 var running := false
@@ -117,6 +119,24 @@ func play_song() -> void:
 	song_occured = true
 	playing = true
 	MUSICSTREAMPLAYER.play()
+	emit_signal("music_started")
+
+#region Функции для редактора
+# Запускает музыку для эдитора
+func editor_play_song() -> void:
+	song_occured = true
+	playing = true
+	MUSICSTREAMPLAYER.play(start_offset)
+
+func editor_stop_song() -> void:
+	MUSICSTREAMPLAYER.stop()
+	reset_playback()
+
+func editor_play_song_from_position(position: float) -> void:
+	song_occured = true
+	playing = true
+	MUSICSTREAMPLAYER.play(position + start_offset)
+#endregion
 
 # Запускает отсчёт, но запускает музыку с задержкой
 func play_song_with_offset() -> void:
@@ -130,7 +150,6 @@ func play_song_with_offset() -> void:
 # Просто останавливает Stream и отключает процесс счёта в _physics_process
 func stop_song() -> void:
 	MUSICSTREAMPLAYER.stop()
-	MUSICSTREAMPLAYER.stream = null
 	playing = false
 
 func play_hitsound() -> void:

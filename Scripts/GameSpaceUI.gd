@@ -10,14 +10,13 @@ class_name GameSpaceUI
 var ROADS : Node2D
 var JUDGE_TEXT = preload("res://Scenes/UI/JudgeText.tscn")
 
-
 func _ready() -> void:
 	ROADS = get_parent().get_node("Roads")
 	Scoring.ui_node = self
 
 func _process(_delta: float) -> void:
 	if Scoring.current_score > int(LABEL.text):
-		LABEL.text = str(int(LABEL.text)+50)
+		LABEL.text = str(int(LABEL.text) + 50)
 	JUDGE_VERDICTS_CONTAINER.position.x = CONTAINER.size.x / 2 - JUDGE_VERDICTS_CONTAINER.size.x / 2
 	JUDGE_VERDICTS_CONTAINER.position.y = ROADS.get_global_transform_with_canvas()[2].y + 25.0
 

@@ -1,0 +1,149 @@
+[gd_scene load_steps=5 format=3 uid="uid://etqq0vllybqf"]
+
+[ext_resource type="Script" path="res://Scripts/Editor/ChartEditorSideBar.gd" id="1_6bsfk"]
+[ext_resource type="Texture2D" uid="uid://c2glssnjbg0c7" path="res://Assets/Editor/round_edge.png" id="2_efje8"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g8qac"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qrdg1"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 8
+border_color = Color(0.941176, 0.772549, 0.6, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="ChartEditorSideBar" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_6bsfk")
+
+[node name="SideBar" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="UpCorner" type="HBoxContainer" parent="SideBar"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TextureRect" type="TextureRect" parent="SideBar/UpCorner"]
+layout_mode = 2
+texture = ExtResource("2_efje8")
+flip_v = true
+
+[node name="PanelContainer" type="PanelContainer" parent="SideBar/UpCorner"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_g8qac")
+
+[node name="PanelContainer" type="PanelContainer" parent="SideBar"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_g8qac")
+
+[node name="ButtonContainer" type="VBoxContainer" parent="SideBar/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 150
+alignment = 1
+
+[node name="TapNoteButton" type="Button" parent="SideBar/PanelContainer/ButtonContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "Tap"
+
+[node name="HoldNoteButton" type="Button" parent="SideBar/PanelContainer/ButtonContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "Hold"
+
+[node name="SliderNoteContainer" type="VBoxContainer" parent="SideBar/PanelContainer/ButtonContainer"]
+layout_mode = 2
+
+[node name="SliderNoteButton" type="Button" parent="SideBar/PanelContainer/ButtonContainer/SliderNoteContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "Slider"
+
+[node name="SliderNoteIdContainer" type="HBoxContainer" parent="SideBar/PanelContainer/ButtonContainer/SliderNoteContainer"]
+visible = false
+layout_mode = 2
+alignment = 1
+
+[node name="SliderNoteIdLeftButton" type="Button" parent="SideBar/PanelContainer/ButtonContainer/SliderNoteContainer/SliderNoteIdContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = "<"
+
+[node name="SliderNoteIdLabel" type="Label" parent="SideBar/PanelContainer/ButtonContainer/SliderNoteContainer/SliderNoteIdContainer"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "0"
+
+[node name="SliderNoteIdRightButton" type="Button" parent="SideBar/PanelContainer/ButtonContainer/SliderNoteContainer/SliderNoteIdContainer"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 26
+text = ">"
+
+[node name="DownCorner" type="HBoxContainer" parent="SideBar"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="TextureRect" type="TextureRect" parent="SideBar/DownCorner"]
+layout_mode = 2
+texture = ExtResource("2_efje8")
+
+[node name="PanelContainer" type="PanelContainer" parent="SideBar/DownCorner"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_g8qac")
+
+[node name="CurrentPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 1795.0
+offset_top = 240.0
+offset_right = 1895.0
+offset_bottom = 340.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_qrdg1")
+
+[connection signal="pressed" from="SideBar/PanelContainer/ButtonContainer/TapNoteButton" to="." method="button_pressed" binds= [0]]
+[connection signal="pressed" from="SideBar/PanelContainer/ButtonContainer/HoldNoteButton" to="." method="button_pressed" binds= [1]]
+[connection signal="pressed" from="SideBar/PanelContainer/ButtonContainer/SliderNoteContainer/SliderNoteButton" to="." method="button_pressed" binds= [2]]
+[connection signal="pressed" from="SideBar/PanelContainer/ButtonContainer/SliderNoteContainer/SliderNoteIdContainer/SliderNoteIdLeftButton" to="." method="button_pressed" binds= [3]]
+[connection signal="pressed" from="SideBar/PanelContainer/ButtonContainer/SliderNoteContainer/SliderNoteIdContainer/SliderNoteIdRightButton" to="." method="button_pressed" binds= [4]]
