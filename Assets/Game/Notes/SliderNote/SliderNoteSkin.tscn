@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3 uid="uid://dykymlb7vr0u2"]
+
+[ext_resource type="Script" path="res://Assets/Game/Notes/NoteSkin.gd" id="1_oxi1c"]
+[ext_resource type="Texture2D" uid="uid://dirkawhfjw5sx" path="res://Assets/Game/Notes/SliderNote/SliderNoteBase.png" id="2_iy36w"]
+[ext_resource type="Texture2D" uid="uid://c58medmqnt6bf" path="res://Assets/Game/Notes/SliderNote/SliderNoteMiddle.png" id="3_u8nli"]
+[ext_resource type="Texture2D" uid="uid://dtvn1dh8upr8x" path="res://Assets/Game/Notes/SliderNote/SliderNoteTop.png" id="4_wyefj"]
+
+[node name="SliderNoteSkin" type="Node2D"]
+scale = Vector2(0.08, 0.08)
+script = ExtResource("1_oxi1c")
+
+[node name="Base" type="Sprite2D" parent="."]
+modulate = Color(0.996078, 0.521569, 0.521569, 1)
+self_modulate = Color(1, 1, 1, 0.5)
+texture = ExtResource("2_iy36w")
+
+[node name="Middle" type="Sprite2D" parent="."]
+texture = ExtResource("3_u8nli")
+
+[node name="Top" type="Sprite2D" parent="."]
+self_modulate = Color(1.5, 1.5, 1.5, 1)
+texture = ExtResource("4_wyefj")

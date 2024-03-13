@@ -1,20 +1,15 @@
 [gd_scene load_steps=4 format=3 uid="uid://lxk8wsn7nyt0"]
 
 [ext_resource type="Script" path="res://Scripts/Notes/SliderNote.gd" id="1_cph3h"]
-
-[sub_resource type="Gradient" id="Gradient_i4j1o"]
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_vh6fp"]
-gradient = SubResource("Gradient_i4j1o")
+[ext_resource type="PackedScene" uid="uid://dykymlb7vr0u2" path="res://Assets/Game/Notes/SliderNote/SliderNoteSkin.tscn" id="2_ookxu"]
+[ext_resource type="PackedScene" uid="uid://pl0m6763y6mp" path="res://Scenes/Notes/HitGradient.tscn" id="3_xk4j0"]
 
 [node name="SliderNote" type="Node2D"]
 script = ExtResource("1_cph3h")
 
-[node name="Skin" type="Sprite2D" parent="."]
-rotation = 0.785398
-scale = Vector2(0.5, 0.5)
-texture = SubResource("GradientTexture2D_vh6fp")
-
 [node name="Disappear" type="Timer" parent="."]
 one_shot = true
+
+[node name="SliderNoteSkin" parent="." instance=ExtResource("2_ookxu")]
+
+[node name="HitGradient" parent="." instance=ExtResource("3_xk4j0")]

@@ -1,0 +1,179 @@
+[gd_scene load_steps=7 format=3 uid="uid://cqe8ruwrndmsv"]
+
+[ext_resource type="Script" path="res://Scripts/Editor/ColorZoneEditor/ColorZonePanel.gd" id="1_kmexj"]
+[ext_resource type="Script" path="res://Scripts/CustomContainers/Control2dElements.gd" id="1_wlktf"]
+[ext_resource type="PackedScene" uid="uid://ck7cnkp4xqrmy" path="res://Assets/Game/Notes/TapNote/TapNoteSkin.tscn" id="2_xtrt7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4686h"]
+bg_color = Color(0.254902, 0.254902, 0.254902, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.169245, 0.169245, 0.169245, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aaxsp"]
+bg_color = Color(0, 0, 0, 0.686275)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ats2e"]
+bg_color = Color(0.164706, 0, 0, 0.886275)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="PanelContainer" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_4686h")
+script = ExtResource("1_kmexj")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+focus_mode = 1
+theme_override_font_sizes/font_size = 16
+placeholder_text = "Tag"
+alignment = 1
+max_length = 8
+context_menu_enabled = false
+drag_and_drop_selection_enabled = false
+flat = true
+caret_blink = true
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Color"
+horizontal_alignment = 1
+
+[node name="Notes" type="HBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Note1" type="Control" parent="HBoxContainer/Notes"]
+custom_minimum_size = Vector2(50, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("1_wlktf")
+
+[node name="TapNoteSkin" parent="HBoxContainer/Notes/Note1" instance=ExtResource("2_xtrt7")]
+position = Vector2(25, 25)
+scale = Vector2(0.1, 0.1)
+
+[node name="Note2" type="Control" parent="HBoxContainer/Notes"]
+custom_minimum_size = Vector2(50, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("1_wlktf")
+
+[node name="TapNoteSkin" parent="HBoxContainer/Notes/Note2" instance=ExtResource("2_xtrt7")]
+position = Vector2(25, 25)
+scale = Vector2(0.1, 0.1)
+
+[node name="Note3" type="Control" parent="HBoxContainer/Notes"]
+custom_minimum_size = Vector2(50, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("1_wlktf")
+
+[node name="TapNoteSkin" parent="HBoxContainer/Notes/Note3" instance=ExtResource("2_xtrt7")]
+position = Vector2(25, 25)
+scale = Vector2(0.1, 0.1)
+
+[node name="Note4" type="Control" parent="HBoxContainer/Notes"]
+custom_minimum_size = Vector2(50, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("1_wlktf")
+
+[node name="TapNoteSkin" parent="HBoxContainer/Notes/Note4" instance=ExtResource("2_xtrt7")]
+position = Vector2(25, 25)
+scale = Vector2(0.1, 0.1)
+
+[node name="Note5" type="Control" parent="HBoxContainer/Notes"]
+custom_minimum_size = Vector2(50, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("1_wlktf")
+
+[node name="TapNoteSkin" parent="HBoxContainer/Notes/Note5" instance=ExtResource("2_xtrt7")]
+position = Vector2(25, 25)
+scale = Vector2(0.1, 0.1)
+
+[node name="Note6" type="Control" parent="HBoxContainer/Notes"]
+custom_minimum_size = Vector2(50, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("1_wlktf")
+
+[node name="TapNoteSkin" parent="HBoxContainer/Notes/Note6" instance=ExtResource("2_xtrt7")]
+position = Vector2(25, 25)
+scale = Vector2(0.1, 0.1)
+
+[node name="EditButtons" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+alignment = 2
+
+[node name="Edit" type="Button" parent="HBoxContainer/EditButtons"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_aaxsp")
+theme_override_styles/hover = SubResource("StyleBoxFlat_aaxsp")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_aaxsp")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_aaxsp")
+theme_override_styles/focus = SubResource("StyleBoxFlat_aaxsp")
+text = "Edit"
+
+[node name="Delete" type="Button" parent="HBoxContainer/EditButtons"]
+custom_minimum_size = Vector2(75, 0)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_ats2e")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ats2e")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ats2e")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_ats2e")
+theme_override_styles/focus = SubResource("StyleBoxFlat_ats2e")
+text = "Delete"
+
+[node name="Select" type="Button" parent="HBoxContainer/EditButtons"]
+visible = false
+custom_minimum_size = Vector2(75, 0)
+layout_mode = 2
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_aaxsp")
+theme_override_styles/hover = SubResource("StyleBoxFlat_aaxsp")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_aaxsp")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_aaxsp")
+theme_override_styles/focus = SubResource("StyleBoxFlat_aaxsp")
+text = "Select
+"
+
+[connection signal="text_changed" from="HBoxContainer/LineEdit" to="." method="rename"]

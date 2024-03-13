@@ -1,7 +1,7 @@
 extends Node
 class_name ConductorScript
 
-# Отвечает не только за синхронизацию игры и музыки, но и за саму музыку
+# Отвечает за синхронизацию игры
 # Принцип работы: за синхронизацию отвечают два параметра: song_position и chart_position
 # Чтобы иметь возможность добавлять ноты до того, как заиграет музыка, существует
 # функция play_song_with_offset(), которая запускает счёт, но не саму музыку,
@@ -23,9 +23,8 @@ class_name ConductorScript
 @export var offset := 0.0
 
 # Указывает АудиоПлеер и таймер начала
-@onready var MUSICSTREAMPLAYER := $Music
+@onready var AUDIO_MANAGER: AudioManager = $AudioManager
 @onready var STARTTIMER := $StartTimer
-@onready var HITSOUND := $Hitsound
 
 
 # Сигналы для подключения
@@ -36,7 +35,7 @@ signal measure_hit(measure_count)
 signal chart_beat_hit(beat_count)
 signal chart_quarter_hit(quarter_count)
 signal chart_measure_hit(measure_count)
-# Для сцены краты
+# Для сцены карты
 signal music_started()
 
 # ПЕРЕМЕННЫЕ
@@ -49,6 +48,9 @@ var s_per_quarter: float
 var s_per_measure: float
 
 var playback_time := 0.0
+
+# Время, в которое произошла смена BPM
+var bpm_change_time: float
 
 # Добавляю ещё одну переменную, так как хочу отделить время проигрывания от времени кондуктора
 # (Это поможет использовать задержку начала отсчёта музыки)
@@ -81,6 +83,11 @@ var last_chart_measure := -1
 var song_length: float
 var note_speed := Global.NOTE_SPEED_CONSTANT
 
+# Интерактивная музыка
+var interactive_music_array: Array = []
+var queue_auto_advance: Array = []
+var queue_on_beat: Array = []
+
 # ФУНКЦИИ
 
 # Инициализирует модуль
@@ -93,6 +100,7 @@ func update() -> void:
 	s_per_beat = 60.0/bpm
 	s_per_quarter = s_per_beat/4
 	s_per_measure = s_per_beat*measure
+	bpm_change_time = maxf(0.0, song_position)
 
 # Загружает музыку по пути (is_custom_map_path просто сокращает передаваемый аргумент,
 # ибо проверяет специально отведённую папку под кастомные карты)
@@ -100,10 +108,12 @@ func load_song(SONG_PATH: String, is_custom_map_path := false) -> void:
 	if playing:
 		stop_song()
 	if !is_custom_map_path:
-		MUSICSTREAMPLAYER.stream = load(SONG_PATH)
+		AUDIO_MANAGER.MUSIC_STREAM = load(SONG_PATH)
+		#MUSICSTREAMPLAYER.stream = load(SONG_PATH)
 	else:
-		MUSICSTREAMPLAYER.stream = load("res://CustomMaps/"+SONG_PATH+"/music.mp3")
-	song_length = MUSICSTREAMPLAYER.stream.get_length()
+		AUDIO_MANAGER.MUSIC_STREAM = load("res://CustomMaps/"+SONG_PATH+"/music.mp3")
+		#MUSICSTREAMPLAYER.stream = load("res://CustomMaps/"+SONG_PATH+"/music.mp3")
+	song_length = AUDIO_MANAGER.MUSIC_STREAM.get_length()
 
 # Облегчает загрузку музыки, если используется CustomMap JSON файл
 func load_song_from_json(json_dictionary: Dictionary, folder_name: String) -> void:
@@ -118,24 +128,67 @@ func load_song_from_json(json_dictionary: Dictionary, folder_name: String) -> vo
 func play_song() -> void:
 	song_occured = true
 	playing = true
-	MUSICSTREAMPLAYER.play()
+	AUDIO_MANAGER.play_music()
+	#MUSICSTREAMPLAYER.play()
 	emit_signal("music_started")
 
 #region Функции для редактора
 # Запускает музыку для эдитора
 func editor_play_song() -> void:
-	song_occured = true
 	playing = true
-	MUSICSTREAMPLAYER.play(start_offset)
+	AUDIO_MANAGER.play_music(start_offset)
+	song_occured = true
 
 func editor_stop_song() -> void:
-	MUSICSTREAMPLAYER.stop()
+	playing = false
+	AUDIO_MANAGER.stop_music()
 	reset_playback()
 
 func editor_play_song_from_position(position: float) -> void:
-	song_occured = true
 	playing = true
-	MUSICSTREAMPLAYER.play(position + start_offset)
+	AUDIO_MANAGER.play_music(position + start_offset)
+	update_playback_to_current_pos(true)
+	song_occured = true
+#endregion
+
+#region Функции для интерактивной музыки
+# Загружает в список всю музыку, переданную в списке
+func load_interactive_music(music_paths: Array):
+	for music_path in music_paths:
+		if music_path is String:
+			interactive_music_array.push_back(load(music_path))
+		else:
+			push_error("Неправильно указан путь при загрузке интерактивной музыки!")
+
+func play_interactive_music(music_resource_id: int, new_bpm: float, loop: bool = false) -> void:
+	if music_resource_id < len(interactive_music_array):
+		queue_auto_advance.clear()
+		playing = false
+		song_occured = false
+		reset_playback()
+		change_bpm(new_bpm)
+		AUDIO_MANAGER.MUSIC_STREAM = interactive_music_array[music_resource_id]
+		AUDIO_MANAGER.play_music(0.0, "", false, loop)
+		playing = true
+		song_occured = true
+
+# Меняет музыку в бит
+func change_on_beat() -> void:
+	if !queue_on_beat.is_empty():
+		play_interactive_music(
+			queue_on_beat[Global.AUTO_ADVANCE_ARRAY_STRUCTURE.NEXT_MUSIC_ID],
+			queue_on_beat[Global.AUTO_ADVANCE_ARRAY_STRUCTURE.NEXT_BPM],
+			queue_on_beat[Global.AUTO_ADVANCE_ARRAY_STRUCTURE.NEXT_LOOP])
+		queue_on_beat.clear()
+
+# Если есть queue_auto_advance, то в конце музыки переходит на него
+func auto_advance() -> void:
+	if !queue_auto_advance.is_empty() and AUDIO_MANAGER.current_music_node == null:
+		play_interactive_music(
+			queue_auto_advance[Global.AUTO_ADVANCE_ARRAY_STRUCTURE.NEXT_MUSIC_ID],
+			queue_auto_advance[Global.AUTO_ADVANCE_ARRAY_STRUCTURE.NEXT_BPM],
+			queue_auto_advance[Global.AUTO_ADVANCE_ARRAY_STRUCTURE.NEXT_LOOP])
+		queue_auto_advance.clear()
 #endregion
 
 # Запускает отсчёт, но запускает музыку с задержкой
@@ -149,11 +202,12 @@ func play_song_with_offset() -> void:
 
 # Просто останавливает Stream и отключает процесс счёта в _physics_process
 func stop_song() -> void:
-	MUSICSTREAMPLAYER.stop()
+	AUDIO_MANAGER.stop_music()
+	#MUSICSTREAMPLAYER.stop()
 	playing = false
 
 func play_hitsound() -> void:
-	HITSOUND.play()
+	AUDIO_MANAGER.play_sfx(AudioManager.SFX.HITSOUND, -10.0)
 
 # Выставляет стандартные значения (a little stupid чтобы знать как это сократить)
 func reset_playback() -> void:
@@ -172,47 +226,63 @@ func reset_playback() -> void:
 	current_chart_measure = -1
 	last_chart_measure = -1
 
-func _physics_process(delta) -> void:
-	# Не идёт дальше, если модуль не запущен
-	if !running: return
+func update_playback_to_current_pos(at_play: bool = false) -> void:
+	# Считает позицию музыки через часы аудиосистемы
+	#song_position = MUSICSTREAMPLAYER.get_playback_position() + AudioServer.get_time_since_last_mix()
+	song_position = AUDIO_MANAGER.return_playback_position() + AudioServer.get_time_since_last_mix()
+	song_position -= AudioServer.get_output_latency() + offset + start_offset
 	
-	# Считает только если играет музыка
-	if playing:
-		if song_occured:
-			# Считает позицию музыки через часы аудиосистемы
-			song_position = MUSICSTREAMPLAYER.get_playback_position() + AudioServer.get_time_since_last_mix()
-			song_position -= AudioServer.get_output_latency() + offset + start_offset
-		
-			# Считает позицию чарта ПО АБСОЛЮТНО ДРУГОМУ МЕТОДУ ЧЕРЕЗ ЧАСЫ ОПЕРАЦИОНКИ
-			# По идее это может мне потом сломать игру, т.к. не факт что оно будет хорошо синхронизировано
-			# но вопрос: КАК ЕЩЁ ЭТО МНЕ РЕАЛИЗОВЫВАТЬ, Я ГОЛОВУ ЦЕЛЫЙ ДЕНЬ ЛОМАЮ
-			chart_position = song_position + note_speed
-		else:
-			if chart_position <= -100.0:
-				chart_position += 100.0
-			chart_position += delta
-		
-		playback_time = MUSICSTREAMPLAYER.get_playback_position()
-		current_measure = floor(song_position/s_per_measure)
-		report_measure()
-		
-		current_beat = floor(song_position/s_per_beat)
-		report_beat()
-		
-		current_quarter = floor(song_position/s_per_quarter)
-		report_quarter()
-		
-		# Дупликаты для чарта
-		current_chart_measure = floor(chart_position/s_per_measure)
-		report_chart_measure()
-		
-		current_chart_beat = floor(chart_position/s_per_beat)
-		report_chart_beat()
-		
-		current_chart_quarter = floor(chart_position/s_per_quarter)
-		report_chart_quarter()
-		
-		if playback_time > song_length: stop_song()
+	chart_position = song_position + note_speed
+	# Подгоняет значения, если мы начинаем музыку не с её начала
+	if at_play:
+		last_measure = floor(song_position/s_per_measure)
+		last_beat = floor(song_position/s_per_beat)
+		last_quarter = floor(song_position/s_per_quarter)
+		last_chart_measure = floor(chart_position/s_per_measure)
+		last_chart_beat = floor(chart_position/s_per_beat)
+		last_chart_quarter = floor(chart_position/s_per_quarter)
+
+# Функция, глобально меняющая BPM
+func change_bpm(new_bpm: float) -> void:
+	var _last_bpm: float = bpm
+	bpm = new_bpm
+	update()
+
+func _physics_process(delta) -> void:
+	# Не идёт дальше, если модуль не запущен или если не играет музыка
+	if !running or !playing: return
+	
+	if song_occured:
+		update_playback_to_current_pos()
+		playback_time = AUDIO_MANAGER.return_playback_position()
+	else:
+		if chart_position <= -100.0:
+			chart_position += 100.0
+		chart_position += delta
+	
+	#playback_time = MUSICSTREAMPLAYER.get_playback_position()
+	current_measure = floor(song_position/s_per_measure)
+	report_measure()
+	
+	current_beat = floor(song_position/s_per_beat)
+	report_beat()
+	
+	current_quarter = floor(song_position/s_per_quarter)
+	report_quarter()
+	
+	# Дупликаты для чарта
+	current_chart_measure = floor(chart_position/s_per_measure)
+	report_chart_measure()
+	
+	current_chart_beat = floor(chart_position/s_per_beat)
+	report_chart_beat()
+	
+	current_chart_quarter = floor(chart_position/s_per_quarter)
+	report_chart_quarter()
+	
+	if playback_time > song_length: stop_song()
+	
+	auto_advance()
 
 func report_beat() -> void:
 	if last_beat < current_beat:

@@ -3,6 +3,8 @@ class_name BarSprite
 
 # Анимации падающих полосок и их удаление после достижения конечной точки
 
+@export var opacity: float = 0.25
+
 const bar_size := {
 	1: 1.5,
 	2: 1.5,
@@ -24,6 +26,6 @@ func _ready() -> void:
 	modulate.a = 0.0
 	var tween = create_tween()
 	tween.tween_property(self, "position:y", 0.0, Conductor.note_speed).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
-	tween.parallel().tween_property(self, "modulate:a", 0.5, Conductor.note_speed)
+	tween.parallel().tween_property(self, "modulate:a", opacity, Conductor.note_speed)
 	await tween.finished
 	disappear()

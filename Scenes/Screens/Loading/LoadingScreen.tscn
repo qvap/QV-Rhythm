@@ -1,0 +1,525 @@
+[gd_scene load_steps=56 format=3 uid="uid://dp7wt2ivbqgn6"]
+
+[ext_resource type="Script" path="res://Scripts/Screens/LoadingScreen/LoadingScreen.gd" id="1_83c0q"]
+[ext_resource type="Texture2D" uid="uid://dcqw6dbhukilv" path="res://Assets/LoadingScreen/Block/block (1).png" id="1_xiqok"]
+[ext_resource type="Shader" path="res://Assets/Shaders/Blur.gdshader" id="2_24h1v"]
+[ext_resource type="Texture2D" uid="uid://bnu4y2obrpe25" path="res://Assets/LoadingScreen/Block/block (2).png" id="2_oxlc0"]
+[ext_resource type="Texture2D" uid="uid://dl2114wwg1tjh" path="res://Assets/LoadingScreen/Block/block (3).png" id="3_5tf1r"]
+[ext_resource type="Texture2D" uid="uid://v560fufk64x" path="res://Assets/LoadingScreen/Block/block (4).png" id="4_h8yqa"]
+[ext_resource type="Texture2D" uid="uid://b7q2ufb2stnfs" path="res://Assets/LoadingScreen/Block/block (5).png" id="5_fr1ed"]
+[ext_resource type="Texture2D" uid="uid://cqyhn83dulaef" path="res://Assets/LoadingScreen/Block/block (6).png" id="6_1n3b2"]
+[ext_resource type="Texture2D" uid="uid://byk1qajpernec" path="res://Assets/LoadingScreen/Block/block (7).png" id="7_2po3a"]
+[ext_resource type="Texture2D" uid="uid://cjw52by5yqog6" path="res://Assets/LoadingScreen/Block/block (8).png" id="8_dgvyq"]
+[ext_resource type="Texture2D" uid="uid://c317dd7omvhb" path="res://Assets/LoadingScreen/Block/block (9).png" id="9_btm4d"]
+[ext_resource type="Texture2D" uid="uid://cphv628xdd1pa" path="res://Assets/LoadingScreen/Block/block (10).png" id="10_i876h"]
+[ext_resource type="Texture2D" uid="uid://dq3paai2hh2dv" path="res://Assets/LoadingScreen/Block/block (11).png" id="11_co8sh"]
+[ext_resource type="Texture2D" uid="uid://v35tggf41n3d" path="res://Assets/LoadingScreen/Block/block (12).png" id="12_q084s"]
+[ext_resource type="Texture2D" uid="uid://dur3bungycokp" path="res://Assets/LoadingScreen/Block/block (13).png" id="13_6jnk2"]
+[ext_resource type="Texture2D" uid="uid://c6ts2hxjjm8xh" path="res://Assets/LoadingScreen/Block/block (14).png" id="14_0fidf"]
+[ext_resource type="Texture2D" uid="uid://dw7vpabngnq6e" path="res://Assets/LoadingScreen/Block/block (15).png" id="15_cpstr"]
+[ext_resource type="Texture2D" uid="uid://b3vdfr3uk1bn7" path="res://Assets/LoadingScreen/Block/block (16).png" id="16_dff6p"]
+[ext_resource type="Texture2D" uid="uid://dkj5edhvyt187" path="res://Assets/LoadingScreen/Block/block (17).png" id="17_dq2ld"]
+[ext_resource type="Texture2D" uid="uid://b72b6xrw05nqs" path="res://Assets/LoadingScreen/Block/block (18).png" id="18_yoibn"]
+[ext_resource type="Texture2D" uid="uid://battp1vhbsosi" path="res://Assets/LoadingScreen/Block/block (19).png" id="19_j3jtr"]
+[ext_resource type="Texture2D" uid="uid://bcr3ml8q5rfs2" path="res://Assets/LoadingScreen/Block/block (20).png" id="20_7vio7"]
+[ext_resource type="Shader" uid="uid://do3syhsdxsuf2" path="res://Assets/Shaders/BlurOnSprite.tres" id="21_0kjk6"]
+[ext_resource type="Texture2D" uid="uid://e1yxex6mk4sp" path="res://Assets/LoadingScreen/Disk/Disk (1).png" id="21_2y64g"]
+[ext_resource type="Texture2D" uid="uid://dlbglfpgx6owj" path="res://Assets/LoadingScreen/Disk/Disk (2).png" id="22_n2bcv"]
+[ext_resource type="Texture2D" uid="uid://dxubln5v0mgow" path="res://Assets/LoadingScreen/Disk/Disk (3).png" id="23_s3kdd"]
+[ext_resource type="Texture2D" uid="uid://bjob3tffgvmbc" path="res://Assets/LoadingScreen/Disk/Disk (4).png" id="24_u15f7"]
+[ext_resource type="Texture2D" uid="uid://lw1vd6hy602s" path="res://Assets/LoadingScreen/Disk/Disk (5).png" id="25_0xk7i"]
+[ext_resource type="Texture2D" uid="uid://ciwr4tjrjqdpl" path="res://Assets/LoadingScreen/Disk/Disk (6).png" id="26_hni3q"]
+[ext_resource type="Texture2D" uid="uid://cdaqdovbcf82g" path="res://Assets/LoadingScreen/Disk/Disk (7).png" id="27_6borc"]
+[ext_resource type="Texture2D" uid="uid://du5lmlpkt4bf0" path="res://Assets/LoadingScreen/Disk/Disk (8).png" id="28_lnouh"]
+[ext_resource type="Texture2D" uid="uid://djrmfa0xakaqj" path="res://Assets/LoadingScreen/Disk/Disk (9).png" id="29_2jap6"]
+[ext_resource type="Texture2D" uid="uid://c8duh5xsem3mn" path="res://Assets/LoadingScreen/Disk/Disk (10).png" id="30_8qgbj"]
+[ext_resource type="Texture2D" uid="uid://unsojll36kh8" path="res://Assets/LoadingScreen/Disk/Disk (11).png" id="31_p4k0i"]
+[ext_resource type="Texture2D" uid="uid://7o40jcqh2blt" path="res://Assets/LoadingScreen/Disk/Disk (12).png" id="32_71ypp"]
+[ext_resource type="Texture2D" uid="uid://dshheauqjs63t" path="res://Assets/LoadingScreen/Disk/Disk (13).png" id="33_d02cn"]
+[ext_resource type="Texture2D" uid="uid://5ibkvm5r0pa7" path="res://Assets/LoadingScreen/Disk/Disk (14).png" id="34_oguar"]
+[ext_resource type="Texture2D" uid="uid://bxltdupkavloq" path="res://Assets/LoadingScreen/Disk/Disk (15).png" id="35_aswki"]
+[ext_resource type="Texture2D" uid="uid://cxx538n4qxh73" path="res://Assets/LoadingScreen/Disk/Disk (16).png" id="36_22pwh"]
+[ext_resource type="Texture2D" uid="uid://67gd7eimu7dn" path="res://Assets/LoadingScreen/Disk/Disk (17).png" id="37_rt6oa"]
+[ext_resource type="Texture2D" uid="uid://damko8q5dhgqk" path="res://Assets/LoadingScreen/Disk/Disk (18).png" id="38_1fwhm"]
+[ext_resource type="Texture2D" uid="uid://ckybxric0ps6j" path="res://Assets/LoadingScreen/Disk/Disk (19).png" id="39_ncvyj"]
+[ext_resource type="Texture2D" uid="uid://bu36rcex84wv4" path="res://Assets/LoadingScreen/Disk/Disk (20).png" id="40_4w2qh"]
+[ext_resource type="FontFile" uid="uid://cg80udnpllu1r" path="res://Assets/Fonts/MusticaPro.otf" id="42_jk307"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8pbh8"]
+shader = ExtResource("2_24h1v")
+shader_parameter/blur = 0.0
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_0t0md"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_xiqok")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_oxlc0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_5tf1r")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_h8yqa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_fr1ed")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_1n3b2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_2po3a")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_dgvyq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_btm4d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_i876h")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_co8sh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_q084s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_6jnk2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_0fidf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_cpstr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_dff6p")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_dq2ld")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_yoibn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_j3jtr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_7vio7")
+}],
+"loop": false,
+"name": &"default",
+"speed": 24.0
+}]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1c3xy"]
+shader = ExtResource("21_0kjk6")
+shader_parameter/amount = 0.0
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_rihoi"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("21_2y64g")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_n2bcv")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_s3kdd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_u15f7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_0xk7i")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_hni3q")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_6borc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("28_lnouh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("29_2jap6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("30_8qgbj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_p4k0i")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_71ypp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_d02cn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("34_oguar")
+}, {
+"duration": 1.0,
+"texture": ExtResource("35_aswki")
+}, {
+"duration": 1.0,
+"texture": ExtResource("36_22pwh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("37_rt6oa")
+}, {
+"duration": 1.0,
+"texture": ExtResource("38_1fwhm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("39_ncvyj")
+}, {
+"duration": 1.0,
+"texture": ExtResource("40_4w2qh")
+}],
+"loop": false,
+"name": &"default",
+"speed": 24.0
+}]
+
+[sub_resource type="Animation" id="Animation_fh8lf"]
+resource_name = "Disk"
+length = 2.6
+loop_mode = 1
+step = 0.04
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("VBoxContainer/Animation/Block/BlockSprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.04, 0.08, 0.12, 0.16, 0.2, 0.24, 0.28, 0.32, 0.36, 0.4, 0.44, 0.48, 0.52, 0.56, 0.6, 0.64, 0.68, 0.72, 0.76, 1.56, 1.6, 1.64, 1.68, 1.72, 1.76, 1.8, 1.84, 1.88, 1.92, 1.96, 2, 2.04, 2.08, 2.12, 2.16, 2.2, 2.24, 2.28, 2.32),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("VBoxContainer/Animation/Disk/DiskSprite:frame")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.04, 0.08, 0.12, 0.16, 0.2, 0.24, 0.28, 0.32, 0.36, 0.4, 0.44, 0.48, 0.52, 0.56, 0.6, 0.64, 0.68, 0.72, 0.76, 1.56, 1.6, 1.64, 1.68, 1.72, 1.76, 1.8, 1.84, 1.88, 1.92, 1.96, 2, 2.04, 2.08, 2.12, 2.16, 2.2, 2.24, 2.28, 2.32),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("VBoxContainer/Animation/Disk/DiskSprite:position:y")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.52, 0.92, 1.36, 1.64, 2, 2.32),
+"transitions": PackedFloat32Array(0.4, 0.5, 1, 2, 2, 2, 1),
+"update": 0,
+"values": [60.0, 55.0, -5.0, -5.0, 60.0, 55.0, 60.0]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("VBoxContainer/Animation/Disk/DiskSprite:position:x")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.52, 0.92, 0.96, 1.36),
+"transitions": PackedFloat32Array(2, 1, 0.5, 1),
+"update": 0,
+"values": [60.0, -60.0, 120.0, 60.0]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("VBoxContainer/Animation/Disk/DiskSprite:modulate:a")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.52, 0.92, 0.96, 1.36),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [1.0, 0.0, 0.0, 1.0]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("VBoxContainer/Animation/Block/BlockSprite:position:y")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(1.6, 1.64, 2),
+"transitions": PackedFloat32Array(1, 2, 1),
+"update": 0,
+"values": [60.0, 65.0, 60.0]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("VBoxContainer/Animation/Disk/DiskSprite:material:shader_parameter/amount")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0.52, 0.92, 0.96, 1.36),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 4.0, 4.0, 0.0]
+}
+
+[sub_resource type="Animation" id="Animation_g2q7x"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("VBoxContainer/Animation/Disk/DiskSprite:material:shader_parameter/amount")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_bjirh"]
+_data = {
+"Disk": SubResource("Animation_fh8lf"),
+"RESET": SubResource("Animation_g2q7x")
+}
+
+[sub_resource type="Animation" id="Animation_of3ub"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Blur:material:shader_parameter/blur")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ColorRect:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_q5prx"]
+resource_name = "default"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Blur:material:shader_parameter/blur")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 5.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ColorRect:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_w6vne"]
+resource_name = "exit"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Blur:material:shader_parameter/blur")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(0.5, 1),
+"update": 0,
+"values": [5.0, 0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ColorRect:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_78s72"]
+_data = {
+"RESET": SubResource("Animation_of3ub"),
+"default": SubResource("Animation_q5prx"),
+"exit": SubResource("Animation_w6vne")
+}
+
+[node name="LoadingScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_83c0q")
+
+[node name="Blur" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_8pbh8")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(500, 500)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Animation" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 125)
+layout_mode = 2
+
+[node name="Block" type="Control" parent="VBoxContainer/Animation"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -60.0
+offset_top = -60.0
+offset_right = 60.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(60, 60)
+
+[node name="BlockSprite" type="AnimatedSprite2D" parent="VBoxContainer/Animation/Block"]
+position = Vector2(60, 60)
+scale = Vector2(0.25, 0.25)
+sprite_frames = SubResource("SpriteFrames_0t0md")
+
+[node name="Disk" type="Control" parent="VBoxContainer/Animation"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -60.0
+offset_top = -60.0
+offset_right = 60.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(60, 60)
+
+[node name="DiskSprite" type="AnimatedSprite2D" parent="VBoxContainer/Animation/Disk"]
+material = SubResource("ShaderMaterial_1c3xy")
+position = Vector2(60, 60)
+scale = Vector2(0.25, 0.25)
+sprite_frames = SubResource("SpriteFrames_rihoi")
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.211765, 0.211765, 0.211765, 1)
+theme_override_fonts/font = ExtResource("42_jk307")
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+
+[node name="DiskAnimation" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_bjirh")
+}
+autoplay = "Disk"
+
+[node name="LoadingAnimation" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_78s72")
+}
+autoplay = "default"
+
+[connection signal="animation_finished" from="LoadingAnimation" to="." method="anim_finished"]

@@ -3,22 +3,29 @@ class_name MainCamera
 
 # Главная камера. Используется на игровом поле
 
-@onready var VIDEO_PLAYER: VideoPlayer = $"../VideoLayer/VideoPlayer"
+var VIDEO_PLAYER: VideoPlayer
 @export var initial_bump_multiplier : float = 1.05
+@export var initial_video_bump_multiplier : float = 1.025
 @export var fixed_zoom: Vector2 = Vector2(3.0, 3.0)
 var bump_multiplier : float = 1.0
 var video_multiplier: float = 1.0
 
 func _ready() -> void:
-	Conductor.beat_hit.connect(bump_camera)
+	init_bump_camera()
 
 func _process(_delta: float) -> void:
+	process_bump_camera()
+
+func init_bump_camera() -> void:
+	Conductor.beat_hit.connect(bump_camera)
+
+func process_bump_camera() -> void:
 	zoom = fixed_zoom * bump_multiplier
 	VIDEO_PLAYER.ZOOM = Vector2(video_multiplier, video_multiplier)
 
 func bump_camera(_current_beat: int) -> void: # меняет коэффиценты зума под бит
 	bump_multiplier = initial_bump_multiplier
-	video_multiplier = initial_bump_multiplier * 0.95
+	video_multiplier = initial_video_bump_multiplier
 	var tween = create_tween()
-	tween.tween_property(self, "bump_multiplier", 1.0, Conductor.s_per_beat - 0.05).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_EXPO)
-	tween.parallel().tween_property(self, "video_multiplier", 1.0, Conductor.s_per_beat - 0.05).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_EXPO)
+	tween.tween_property(self, "bump_multiplier", 1.0, Conductor.s_per_beat - 0.05).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CIRC)
+	tween.parallel().tween_property(self, "video_multiplier", 1.0, Conductor.s_per_beat - 0.05).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CIRC)

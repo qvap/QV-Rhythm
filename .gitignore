@@ -1,2 +1,6 @@
 # Godot 4+ specific ignores
 .godot/
+*.psd
+*.blend
+*.blend1
+*.flp

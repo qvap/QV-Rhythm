@@ -1,0 +1,76 @@
+[gd_resource type="VisualShader" load_steps=6 format=3 uid="uid://do3syhsdxsuf2"]
+
+[ext_resource type="Script" path="res://addons/shaderV/rgba/blur/blur9sample.gd" id="1_uadao"]
+
+[sub_resource type="VisualShaderNodeCustom" id="VisualShaderNodeCustom_1hcfj"]
+default_input_values = [2, -1.0, 3, 2.0]
+initialized = true
+script = ExtResource("1_uadao")
+
+[sub_resource type="VisualShaderNodeFloatParameter" id="VisualShaderNodeFloatParameter_0oiea"]
+parameter_name = "amount"
+hint = 1
+max = 5.0
+default_value_enabled = true
+
+[sub_resource type="VisualShaderNodeFloatOp" id="VisualShaderNodeFloatOp_giaqk"]
+operator = 2
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_e7kds"]
+expanded_output_ports = [0]
+input_name = "color"
+
+[resource]
+code = "shader_type canvas_item;
+render_mode blend_mix;
+
+uniform float amount : hint_range(0, 5) = 0;
+
+
+// BlurBasic
+#include \"res://addons/shaderV/rgba/blur/blur9sample.gdshaderinc\"
+
+void fragment() {
+// FloatParameter:3
+	float n_out3p0 = amount;
+
+
+	vec3 n_out2p0;
+	float n_out2p1;
+// BlurBasic:2
+	float n_in2p2 = -1.00000;
+	{
+		vec4 n_out2p0n_out2p1 = _blur9sampleFunc(TEXTURE, UV.xy, n_in2p2, n_out3p0);
+		n_out2p0 = n_out2p0n_out2p1.rgb;
+		n_out2p1 = n_out2p0n_out2p1.a;
+	}
+
+
+// Input:5
+	vec4 n_out5p0 = COLOR;
+	float n_out5p4 = n_out5p0.a;
+
+
+// FloatOp:4
+	float n_out4p0 = n_out2p1 * n_out5p4;
+
+
+// Output:0
+	COLOR.rgb = n_out2p0;
+	COLOR.a = n_out4p0;
+
+
+}
+"
+mode = 1
+flags/light_only = false
+nodes/fragment/0/position = Vector2(660, 140)
+nodes/fragment/2/node = SubResource("VisualShaderNodeCustom_1hcfj")
+nodes/fragment/2/position = Vector2(160, 80)
+nodes/fragment/3/node = SubResource("VisualShaderNodeFloatParameter_0oiea")
+nodes/fragment/3/position = Vector2(-120, 200)
+nodes/fragment/4/node = SubResource("VisualShaderNodeFloatOp_giaqk")
+nodes/fragment/4/position = Vector2(480, 220)
+nodes/fragment/5/node = SubResource("VisualShaderNodeInput_e7kds")
+nodes/fragment/5/position = Vector2(160, 280)
+nodes/fragment/connections = PackedInt32Array(3, 0, 2, 3, 2, 0, 0, 0, 2, 1, 4, 0, 5, 4, 4, 1, 4, 0, 0, 1)

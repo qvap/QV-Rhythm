@@ -1,18 +1,18 @@
 [gd_scene load_steps=3 format=3 uid="uid://cfin8augm8uvt"]
 
 [ext_resource type="Script" path="res://Scripts/Autoload/Conductor.gd" id="1_sc76y"]
-[ext_resource type="AudioStream" uid="uid://cm6wy0xys3yx8" path="res://Assets/SFX/Hitsound.wav" id="2_2kam0"]
+[ext_resource type="Script" path="res://Scripts/Autoload/AudioManager.gd" id="2_q0pfq"]
 
 [node name="Conductor" type="Node"]
 script = ExtResource("1_sc76y")
 offset = 0.01
 
-[node name="Music" type="AudioStreamPlayer" parent="."]
-bus = &"Music"
+[node name="AudioManager" type="Node" parent="."]
+script = ExtResource("2_q0pfq")
 
-[node name="Hitsound" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("2_2kam0")
-bus = &"SFX"
+[node name="MusicPool" type="Node" parent="AudioManager"]
+
+[node name="SFXPool" type="Node" parent="AudioManager"]
 
 [node name="StartTimer" type="Timer" parent="."]
 one_shot = true

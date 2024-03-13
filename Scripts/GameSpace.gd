@@ -3,11 +3,12 @@ class_name GameSpace
 
 # Игровое поле, которое заодно загружает чарты и карту
 
-@onready var CAMERA := $MainCamera # А тут нод камеры
+@onready var CAMERA : MainCamera # А тут нод камеры
+@onready var ROAD_MARKERS: Node2D
+
 @onready var VIDEO_PLAYER: VideoPlayer = $VideoLayer/VideoPlayer # Плеер видео
 @onready var ROADS_HOLDER := $Roads
 @onready var MAP_SCENE_HOLDER: Node2D = $MapSceneHolder
-@onready var ROAD_MARKERS: Node2D = $RoadMarkers
 
 
 var ROAD := preload("res://Scenes/Notes/Road.tscn")
@@ -20,10 +21,6 @@ signal roads_loaded()
 
 func _draw() -> void:
 	if Settings.DEBUG_LINES == true:
-		var before_distance_in_pixels: float = Scoring.SAFE_NOTE_ZONE * (450.0 / (Conductor.note_speed * Global.NOTE_SPEED_CONSTANT))
-		var after_distance_in_pixels: float = Scoring.NOTE_ZONE * (450.0 / (Conductor.note_speed * Global.NOTE_SPEED_CONSTANT))
-		draw_line(Vector2(-100.0, -before_distance_in_pixels), Vector2(100.0, -before_distance_in_pixels), Color(1, 0.27, 0.27, 0.5), 2.0)
-		draw_line(Vector2(-100.0, after_distance_in_pixels), Vector2(100.0, after_distance_in_pixels), Color(1, 0.27, 0.27, 0.5), 2.0)
 		for zone in Scoring.JUDGE_OFFHITS_ARRAY:
 			var distance_in_pixels = (zone / 60.0) * (450.0 / (Conductor.note_speed * Global.NOTE_SPEED_CONSTANT))
 			draw_line(Vector2(-100.0, -distance_in_pixels), Vector2(100.0, -distance_in_pixels), Color(1, 0.27, (zone / 10.0), 0.5), 2.0)
@@ -50,7 +47,19 @@ func load_game(core_level: bool, custom_map_folder_name: String) -> void:
 		var map_scene_resource = load(path+"/scene.tscn")
 		var map_scene_init = map_scene_resource.instantiate()
 		MAP_SCENE = map_scene_init
+		ROAD_MARKERS = map_scene_init.get_node("RoadMarkers")
+		CAMERA = map_scene_init.get_node("MainCamera")
+		CAMERA.VIDEO_PLAYER = VIDEO_PLAYER
 		MAP_SCENE_HOLDER.add_child(map_scene_init)
+		MAP_SCENE_LOADED = true
+	else:
+		var base_scene_resource = load("res://Scenes/Game/BaseScene.tscn")
+		var base_scene_init = base_scene_resource.instantiate()
+		MAP_SCENE = base_scene_init
+		ROAD_MARKERS = base_scene_init.get_node("RoadMarkers")
+		CAMERA = base_scene_init.get_node("MainCamera")
+		CAMERA.VIDEO_PLAYER = VIDEO_PLAYER
+		MAP_SCENE_HOLDER.add_child(base_scene_init)
 		MAP_SCENE_LOADED = true
 	
 	instantiate_roads(mapdata["chart_size"])
@@ -81,10 +90,16 @@ func load_game(core_level: bool, custom_map_folder_name: String) -> void:
 						var next_spawn_quarters : int = iterated_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]\
 						[Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_SPAWN_QUARTER]
 						var duration: int = next_spawn_quarters - spawn_quarters
-						var converted_hold_note : Array = [Global.NOTE_TYPE.HOLDNOTE, spawn_quarters,\
-						next_road,[duration]]
-						ROADS_MASSIVE[next_road].ALL_NOTES.push_back(converted_hold_note)
-						setup_hold_controls(converted_hold_note)
+						var structured_hold_note: Array = Tools.create_structured_note_array(true)
+						var structured_hold_note_additional_info: Array = []
+						structured_hold_note_additional_info.resize(len(Global.HOLD_NOTE_ADDITIONAL_INFO.values()))
+						structured_hold_note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION] = duration
+						structured_hold_note[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.NOTE_TYPE.HOLDNOTE
+						structured_hold_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = spawn_quarters
+						structured_hold_note[Global.NOTE_CHART_STRUCTURE.ROAD] = next_road
+						structured_hold_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO] = structured_hold_note_additional_info
+						ROADS_MASSIVE[next_road].ALL_NOTES.push_back(structured_hold_note)
+						setup_hold_controls(structured_hold_note)
 			Global.NOTE_TYPE.SLIDERTICK:
 				match Settings.CHOSEN_GAMEPLAY_MODE:
 					Settings.GAMEPLAY_MODE.SLIDERS:
@@ -99,31 +114,58 @@ func load_game(core_level: bool, custom_map_folder_name: String) -> void:
 						var next_spawn_quarters : int = iterated_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]\
 						[Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_SPAWN_QUARTER]
 						var duration: int = next_spawn_quarters - spawn_quarters
-						var converted_hold_note : Array = [Global.NOTE_TYPE.HOLDNOTE, spawn_quarters,\
-						next_road,[duration]]
-						ROADS_MASSIVE[next_road].ALL_NOTES.push_back(converted_hold_note)
-						setup_hold_controls(converted_hold_note)
+						var structured_hold_note: Array = Tools.create_structured_note_array(true)
+						var structured_hold_note_additional_info: Array = []
+						structured_hold_note_additional_info.resize(len(Global.HOLD_NOTE_ADDITIONAL_INFO.values()))
+						structured_hold_note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION] = duration
+						structured_hold_note[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.NOTE_TYPE.HOLDNOTE
+						structured_hold_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = spawn_quarters
+						structured_hold_note[Global.NOTE_CHART_STRUCTURE.ROAD] = next_road
+						structured_hold_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO] = structured_hold_note_additional_info
+						ROADS_MASSIVE[next_road].ALL_NOTES.push_back(structured_hold_note)
+						setup_hold_controls(structured_hold_note)
 			Global.NOTE_TYPE.SLIDEREND:
 				if Settings.CHOSEN_GAMEPLAY_MODE == Settings.GAMEPLAY_MODE.SLIDERS:
 					ROADS_MASSIVE[note_road].ALL_NOTES.push_back(note)
+					
+	for road in ROADS_MASSIVE:
+		road.ALL_NOTES.sort_custom(sort_notes)
 #endregion
+	
+	load_colors(mapchart["ColorZones"])
 	
 	if mapdata["has_video"]:
 		VIDEO_PLAYER.blur = mapdata["video_blur_amount"]
-		VIDEO_PLAYER.load_video(path+"/video.ogv")
+		VIDEO_PLAYER.load_video(path+"/video.mp4")
 	
 	Conductor.load_song_from_json(mapdata, custom_map_folder_name)
 	Conductor.run()
+	await get_tree().create_timer(0.01).timeout # я не должен так делать, но так проще всего
+	# Если перед start_game нету паузы, то первая четверть в сильном рассинхроне, не знаю,
+	# почему так получается. Пока что не буду это фиксить, так как после создания меню и загрузки
+	# игры через это меню такой проблемы быть не должно
 	start_game()
+
+# Появилась потребность сортировать порядок нот в списке, т.к. из-за неправильного
+# порядка полностью ломается спавн слайдеров, ибо спавн нот не предусматривает расположение
+# нескольких нот в одном месте (в случае слайдеров - контроллеров)
+func sort_notes(a: Array, b: Array) -> bool:
+	if a[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] < b[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN]\
+	or (a[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] == b[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN]\
+	and a[Global.NOTE_CHART_STRUCTURE.TYPE] < b[Global.NOTE_CHART_STRUCTURE.TYPE]):
+		return true
+	return false
 
 # Функция, которая ищет слайдер ноты с соответствующим id
 func iterate_for_slider(mapchart: Dictionary, note_index: int) -> Array:
 	var note : Array = mapchart["Notes"][note_index]
 	var note_additional_info : Array = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]
 	for slider_note_index in range(note_index + 1, len(mapchart["Notes"])):
-		var slider_note = mapchart["Notes"][slider_note_index]
-		var slider_additional_info = slider_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]
-		if slider_additional_info[Global.SLIDER_NOTE_ADDITIONAL_INFO.ID] == note_additional_info[Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]:
+		var slider_note: Array = mapchart["Notes"][slider_note_index]
+		var slider_additional_info: Array = slider_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]
+		var slider_type: int = slider_note[Global.NOTE_CHART_STRUCTURE.TYPE]
+		if (slider_additional_info[Global.SLIDER_NOTE_ADDITIONAL_INFO.ID] == note_additional_info[Global.SLIDER_NOTE_ADDITIONAL_INFO.ID])\
+		and !(slider_type in Global.CONTROL_TYPE):
 			note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO].push_back(slider_note[Global.NOTE_CHART_STRUCTURE.ROAD])
 			note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO].push_back(slider_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN])
 			return note
@@ -135,18 +177,37 @@ func iterate_for_slider(mapchart: Dictionary, note_index: int) -> Array:
 func setup_slider_controls(iterated_note: Array, mapchart: Dictionary, note_index: int) -> void:
 	var note : Array = mapchart["Notes"][note_index]
 	var note_additional_info : Array = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]
+	var note_id: int = note_additional_info[Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
 	var note_spawn_quarter: int = note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN]
 	var next_road = iterated_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_ROAD]
 	var length_in_quarters: int = note_additional_info\
 	[Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_SPAWN_QUARTER] - note_spawn_quarter
-	ROADS_MASSIVE[next_road].ALL_NOTES.push_back([Global.CONTROL_TYPE.SLIDERCONTROL, note_spawn_quarter, next_road])
+	var first_structured_note_array: Array = Tools.create_structured_note_array(true)
+	
+	# Мне это нужно для того, чтобы добавлять в контрол ноты айди слайдеров
+	var structured_note_additional_info_array: Array = []
+	structured_note_additional_info_array.resize(len(Global.SLIDER_NOTE_ADDITIONAL_INFO.values()))
+	structured_note_additional_info_array[Global.SLIDER_NOTE_ADDITIONAL_INFO.ID] = note_id
+	
+	first_structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.CONTROL_TYPE.SLIDERCONTROL
+	first_structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = note_spawn_quarter
+	first_structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = next_road
+	first_structured_note_array[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]\
+	= structured_note_additional_info_array
+	ROADS_MASSIVE[next_road].ALL_NOTES.push_back(first_structured_note_array)
 	for tick in range(length_in_quarters + 1):
 		if tick == length_in_quarters:
-			ROADS_MASSIVE[next_road].ALL_NOTES.push_back([Global.CONTROL_TYPE.SLIDERCONTROLEND,\
-			note_spawn_quarter+tick, next_road])
+			var structured_note_array: Array = Tools.create_structured_note_array(false)
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.CONTROL_TYPE.SLIDERCONTROLEND
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = note_spawn_quarter+tick
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = next_road
+			ROADS_MASSIVE[next_road].ALL_NOTES.push_back(structured_note_array)
 		elif tick != 0:
-			ROADS_MASSIVE[next_road].ALL_NOTES.push_back([Global.CONTROL_TYPE.SLIDERCONTROLTICK,\
-			note_spawn_quarter+tick, next_road])
+			var structured_note_array: Array = Tools.create_structured_note_array(false)
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.CONTROL_TYPE.SLIDERCONTROLTICK
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = note_spawn_quarter+tick
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = next_road
+			ROADS_MASSIVE[next_road].ALL_NOTES.push_back(structured_note_array)
 		else:
 			continue
 
@@ -157,21 +218,28 @@ func setup_hold_controls(note: Array) -> void:
 	var note_road : int = note[Global.NOTE_CHART_STRUCTURE.ROAD]
 	for tick in range(note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]+1):
 		if tick == note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]:
-			ROADS_MASSIVE[note_road].ALL_NOTES.push_back([Global.CONTROL_TYPE.HOLDCONTROLEND,\
-			note_spawn_quarter+tick, note_road])
+			var structured_note_array: Array = Tools.create_structured_note_array(false)
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.CONTROL_TYPE.HOLDCONTROLEND
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = note_spawn_quarter+tick
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = note_road
+			ROADS_MASSIVE[note_road].ALL_NOTES.push_back(structured_note_array)
 		elif tick != 0:
-			ROADS_MASSIVE[note_road].ALL_NOTES.push_back([Global.CONTROL_TYPE.HOLDCONTROLTICK,\
-			note_spawn_quarter+tick, note_road])
+			var structured_note_array: Array = Tools.create_structured_note_array(false)
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.CONTROL_TYPE.HOLDCONTROLTICK
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = note_spawn_quarter+tick
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = note_road
+			ROADS_MASSIVE[note_road].ALL_NOTES.push_back(structured_note_array)
 		else:
-			ROADS_MASSIVE[note_road].ALL_NOTES.push_back([Global.CONTROL_TYPE.HOLDCONTROL,\
-			note_spawn_quarter, note_road, [note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]]])
-
-# Подключает все свойства в mapscene к оригинальным нодам в gamespace
-func control_gamespace() -> void:
-	if MAP_SCENE_LOADED:
-		CAMERA.position = MAP_SCENE.CAMERA.position
-		CAMERA.rotation = MAP_SCENE.CAMERA.rotation
-		CAMERA.zoom = MAP_SCENE.CAMERA.zoom
+			var structured_note_array: Array = Tools.create_structured_note_array(true)
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.CONTROL_TYPE.HOLDCONTROL
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = note_spawn_quarter
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = note_road
+			var structured_note_additional_info: Array = []
+			structured_note_additional_info.resize(len(Global.HOLD_NOTE_ADDITIONAL_INFO))
+			structured_note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]\
+			= note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]
+			structured_note_array[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO] = structured_note_additional_info
+			ROADS_MASSIVE[note_road].ALL_NOTES.push_back(structured_note_array)
 
 # Запускает кондуктор и саму игру
 func start_game() -> void:
@@ -185,38 +253,51 @@ func instantiate_roads(chart_size: int) -> void:
 	var CHARTMARKERS : Node2D # Должен сохранить в себя ноду с маркерами карты
 	match chart_size:
 		1:
-			CHARTMARKERS = get_node("RoadMarkers/1KChartRoadMarkers")
+			CHARTMARKERS = MAP_SCENE.get_node("RoadMarkers/1KChartRoadMarkers")
 		2:
-			CHARTMARKERS = get_node("RoadMarkers/2KChartRoadMarkers")
+			CHARTMARKERS = MAP_SCENE.get_node("RoadMarkers/2KChartRoadMarkers")
 		3:
-			CHARTMARKERS = get_node("RoadMarkers/3KChartRoadMarkers")
+			CHARTMARKERS = MAP_SCENE.get_node("RoadMarkers/3KChartRoadMarkers")
 		4:
-			CHARTMARKERS = get_node("RoadMarkers/4KChartRoadMarkers")
+			CHARTMARKERS = MAP_SCENE.get_node("RoadMarkers/4KChartRoadMarkers")
 		5:
-			CHARTMARKERS = get_node("RoadMarkers/5KChartRoadMarkers")
+			CHARTMARKERS = MAP_SCENE.get_node("RoadMarkers/5KChartRoadMarkers")
 		6:
-			CHARTMARKERS = get_node("RoadMarkers/6KChartRoadMarkers")
+			CHARTMARKERS = MAP_SCENE.get_node("RoadMarkers/6KChartRoadMarkers")
 	ROADMARKERS_INDEX = CHARTMARKERS.get_index()
 	for index in range(chart_size):
 		var road_node = ROAD.instantiate()
 		road_node.road_index = index
 		road_node.name = "Road"+str(index)
 		if MAP_SCENE_LOADED:
-			road_node.ROAD_POSITION_MARKER = MAP_SCENE.ROAD_MARKERS.get_child(chart_size - 1).get_child(index)
-		else:
 			road_node.ROAD_POSITION_MARKER = CHARTMARKERS.get_child(index)
 		roads_loaded.connect(road_node.get_roads_array)
 		ROADS_MASSIVE.push_back(road_node)
 		ROADS_HOLDER.add_child(road_node)
 	emit_signal("roads_loaded")
 
-func _ready() -> void:
-	load_game(true, "RobotLanguage")
-	
-	# Пока что скрипт на создание папки запихну сюда
-	var usermap_dir = DirAccess.open("user://Maps")
-	if !usermap_dir:
-		DirAccess.make_dir_absolute("user://Maps")
+# Загружает цвета нот на каждую дорогу
+func load_colors(colorways: Array) -> void:
+	for colorway in colorways:
+		var color_quarter_to_spawn: int = colorway[Global.COLORWAY_CHART_STRUCTURE.QUARTER_TO_SPAWN]
+		var colorway_array: Array = colorway[Global.COLORWAY_CHART_STRUCTURE.COLORWAY]
+		for color_index in range(len(colorway_array)):
+			if color_index + 1 <= Global.CURRENT_CHART_SIZE:
+				var color: String = colorway_array[color_index]
+				var structured_colorway_array: Array = Tools.create_structured_colorway_array()
+				structured_colorway_array[Global.COLORWAY_CHART_STRUCTURE.QUARTER_TO_SPAWN]\
+				= color_quarter_to_spawn
+				if Color.html_is_valid(color):
+					structured_colorway_array[Global.COLORWAY_CHART_STRUCTURE.COLORWAY]\
+					= Color.html(color)
+				else:
+					push_error("Не удалось загрузить html код цвета.")
+				ROADS_MASSIVE[color_index].ALL_COLORS.push_back(structured_colorway_array)
 
-func _process(_delta: float) -> void:
-	control_gamespace()
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("Open_Editor"):
+		LoadScene.transition("res://Scenes/Editor/ChartEditor.tscn")
+
+func _ready() -> void:
+	load_game(true, "Shiawase")
+	Tools.create_user_directory()

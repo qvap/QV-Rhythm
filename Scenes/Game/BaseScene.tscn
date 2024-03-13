@@ -1,0 +1,104 @@
+[gd_scene load_steps=4 format=3 uid="uid://b0ru3o0p0eho4"]
+
+[ext_resource type="PackedScene" uid="uid://dknxbqfwv2jca" path="res://Scenes/Game/MainCamera.tscn" id="1_bjfen"]
+[ext_resource type="Script" path="res://Scripts/Game/BaseScene.gd" id="1_hnoaj"]
+
+[sub_resource type="Environment" id="Environment_8re80"]
+background_mode = 3
+glow_enabled = true
+glow_levels/2 = 4.4
+glow_levels/3 = 1.76
+glow_levels/4 = 0.15
+glow_levels/5 = 0.0
+glow_intensity = 0.17
+glow_strength = 1.42
+glow_blend_mode = 1
+
+[node name="BaseScene" type="Node2D"]
+script = ExtResource("1_hnoaj")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_8re80")
+
+[node name="MainCamera" parent="." instance=ExtResource("1_bjfen")]
+position = Vector2(0, -125)
+zoom = Vector2(3, 3)
+
+[node name="RoadMarkers" type="Node2D" parent="."]
+
+[node name="1KChartRoadMarkers" type="Node2D" parent="RoadMarkers"]
+visible = false
+
+[node name="ChartRoad1" type="Marker2D" parent="RoadMarkers/1KChartRoadMarkers"]
+
+[node name="2KChartRoadMarkers" type="Node2D" parent="RoadMarkers"]
+visible = false
+
+[node name="ChartRoad1" type="Marker2D" parent="RoadMarkers/2KChartRoadMarkers"]
+position = Vector2(-25, 0)
+
+[node name="ChartRoad2" type="Marker2D" parent="RoadMarkers/2KChartRoadMarkers"]
+position = Vector2(25, 0)
+
+[node name="3KChartRoadMarkers" type="Node2D" parent="RoadMarkers"]
+visible = false
+
+[node name="ChartRoad1" type="Marker2D" parent="RoadMarkers/3KChartRoadMarkers"]
+position = Vector2(-50, 0)
+
+[node name="ChartRoad2" type="Marker2D" parent="RoadMarkers/3KChartRoadMarkers"]
+
+[node name="ChartRoad3" type="Marker2D" parent="RoadMarkers/3KChartRoadMarkers"]
+position = Vector2(50, 0)
+
+[node name="4KChartRoadMarkers" type="Node2D" parent="RoadMarkers"]
+
+[node name="ChartRoad1" type="Marker2D" parent="RoadMarkers/4KChartRoadMarkers"]
+position = Vector2(-75, 0)
+
+[node name="ChartRoad2" type="Marker2D" parent="RoadMarkers/4KChartRoadMarkers"]
+position = Vector2(-25, 0)
+
+[node name="ChartRoad3" type="Marker2D" parent="RoadMarkers/4KChartRoadMarkers"]
+position = Vector2(25, 0)
+
+[node name="ChartRoad4" type="Marker2D" parent="RoadMarkers/4KChartRoadMarkers"]
+position = Vector2(75, 0)
+
+[node name="5KChartRoadMarkers" type="Node2D" parent="RoadMarkers"]
+visible = false
+
+[node name="ChartRoad1" type="Marker2D" parent="RoadMarkers/5KChartRoadMarkers"]
+position = Vector2(-100, 0)
+
+[node name="ChartRoad2" type="Marker2D" parent="RoadMarkers/5KChartRoadMarkers"]
+position = Vector2(-50, 0)
+
+[node name="ChartRoad3" type="Marker2D" parent="RoadMarkers/5KChartRoadMarkers"]
+
+[node name="ChartRoad4" type="Marker2D" parent="RoadMarkers/5KChartRoadMarkers"]
+position = Vector2(50, 0)
+
+[node name="ChartRoad5" type="Marker2D" parent="RoadMarkers/5KChartRoadMarkers"]
+position = Vector2(100, 0)
+
+[node name="6KChartRoadMarkers" type="Node2D" parent="RoadMarkers"]
+visible = false
+
+[node name="ChartRoad1" type="Marker2D" parent="RoadMarkers/6KChartRoadMarkers"]
+position = Vector2(-125, 0)
+
+[node name="ChartRoad2" type="Marker2D" parent="RoadMarkers/6KChartRoadMarkers"]
+position = Vector2(-75, 0)
+
+[node name="ChartRoad3" type="Marker2D" parent="RoadMarkers/6KChartRoadMarkers"]
+position = Vector2(-25, 0)
+
+[node name="ChartRoad4" type="Marker2D" parent="RoadMarkers/6KChartRoadMarkers"]
+position = Vector2(25, 0)
+
+[node name="ChartRoad5" type="Marker2D" parent="RoadMarkers/6KChartRoadMarkers"]
+position = Vector2(75, 0)
+
+[node name="ChartRoad6" type="Marker2D" parent="RoadMarkers/6KChartRoadMarkers"]
+position = Vector2(125, 0)

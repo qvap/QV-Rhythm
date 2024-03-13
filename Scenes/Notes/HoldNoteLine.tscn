@@ -1,10 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://b4yiiubjo2ld0"]
+[gd_scene load_steps=3 format=3 uid="uid://b4yiiubjo2ld0"]
+
+[ext_resource type="Texture2D" uid="uid://d2cppgguddimu" path="res://Assets/Game/Notes/HoldNote/HoldNoteLine.png" id="1_u3wjm"]
 
 [sub_resource type="Gradient" id="Gradient_yvvbf"]
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.25)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
 [node name="HoldNoteLine" type="Line2D"]
+self_modulate = Color(1.1, 1.1, 1.1, 1)
+z_index = -1
+texture_repeat = 2
 points = PackedVector2Array(0, 0, 0, 0)
-width = 32.0
-default_color = Color(1, 1, 1, 0.501961)
+width = 40.0
 gradient = SubResource("Gradient_yvvbf")
+texture = ExtResource("1_u3wjm")
+texture_mode = 1

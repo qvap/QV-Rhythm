@@ -3,10 +3,12 @@
 [ext_resource type="Script" path="res://Scripts/Editor/NoteIndicator.gd" id="1_iqqdt"]
 
 [sub_resource type="Gradient" id="Gradient_ossks"]
-offsets = PackedFloat32Array(0.425641, 0.851282)
+resource_local_to_scene = true
+offsets = PackedFloat32Array(0.410256, 0.784615)
 colors = PackedColorArray(1, 1, 1, 1, 0.99, 0.69795, 0.4059, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_74u77"]
+resource_local_to_scene = true
 gradient = SubResource("Gradient_ossks")
 use_hdr = true
 
@@ -25,5 +27,6 @@ offset_bottom = 32.0
 pivot_offset = Vector2(32, 32)
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 32
+text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1

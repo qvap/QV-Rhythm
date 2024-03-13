@@ -21,7 +21,7 @@ class_name ChartEditorSideBar
 
 @onready var CHART_EDITOR: ChartEditor
 enum BUTTON_INDEX {TAP, HOLD, SLIDE, ID_LEFT, ID_RIGHT}
-var CURRENT_SLIDER_ID: int = 0
+var CURRENT_SLIDER_ID: int = 0: set = update_slider_id
 @onready var CURRENT_BUTTON: Button = TAP_NOTE_BUTTON
 
 @export var PANEL_COLOR: Color = Color(0.15, 0.15, 0.15)
@@ -50,13 +50,16 @@ func button_pressed(button: int) -> void:
 		BUTTON_INDEX.ID_LEFT:
 			SLIDER_NOTE_ID_CONTAINER.visible = true
 			CURRENT_SLIDER_ID -= 1
-			CURRENT_SLIDER_ID = clamp(CURRENT_SLIDER_ID, 0, 1_000_000)
-			SLIDER_NOTE_ID_LABEL.text = str(CURRENT_SLIDER_ID)
 		BUTTON_INDEX.ID_RIGHT:
 			SLIDER_NOTE_ID_CONTAINER.visible = true
 			CURRENT_SLIDER_ID += 1
-			CURRENT_SLIDER_ID = clamp(CURRENT_SLIDER_ID, 0, 1_000_000)
-			SLIDER_NOTE_ID_LABEL.text = str(CURRENT_SLIDER_ID)
+
+func update_slider_id(id: int) -> void:
+	CURRENT_SLIDER_ID = maxi(id, 0)
+	SLIDER_NOTE_ID_LABEL.text = str(id)
+
+func change_current_note_color(color: Color) -> void:
+	CHART_EDITOR.CURRENT_NOTE_COLOR = color
 
 func _process(_delta: float) -> void:
 	# Учитывает угловые вставки и меняет размер

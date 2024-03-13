@@ -12,7 +12,7 @@ var HOLD_TO_CONTROL: HoldNote
 
 func _ready() -> void:
 	DISAPPEAR_TIMER = $Disappear
-	SKIN = $Skin
+	SKIN = $TapNoteSkin
 	initialize_note()
 	if NOTE_TYPE == Global.NOTE_TYPE.HOLDNOTE:
 		setup_line()
@@ -21,6 +21,7 @@ func _ready() -> void:
 
 func setup_line() -> void:
 	LINE_NODE = LINE.instantiate()
+	LINE_NODE.modulate = COLOR
 	add_child(LINE_NODE)
 	LINE_NODE.top_level = true
 	LINE_NODE.points[0] = Vector2(0.0, 0.0)
@@ -41,9 +42,10 @@ func _process(delta: float) -> void:
 func miss_note() -> void:
 	match NOTE_TYPE:
 		Global.NOTE_TYPE.HOLDNOTE:
-			LINE_NODE.modulate.a = 0.5
-			modulate.a = 0.5
-			DISAPPEAR_TIMER.start()
+			if !Settings.BOT_PLAY:
+				LINE_NODE.modulate.a = 0.5
+				modulate.a = 0.5
+				DISAPPEAR_TIMER.start()
 		Global.CONTROL_TYPE.HOLDCONTROL:
 			HOLD_TO_CONTROL.miss_note()
 			queue_free()
@@ -51,3 +53,6 @@ func miss_note() -> void:
 			queue_free()
 		Global.CONTROL_TYPE.HOLDCONTROLEND:
 			queue_free()
+
+func hit_note() -> void:
+	HOLD_TO_CONTROL.SKIN.visible = false

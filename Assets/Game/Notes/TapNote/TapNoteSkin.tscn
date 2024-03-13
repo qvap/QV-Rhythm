@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://ck7cnkp4xqrmy"]
+
+[ext_resource type="Texture2D" uid="uid://cv7mhg3dgk2i5" path="res://Assets/Game/Notes/TapNote/TapNoteBase.png" id="1_30o7l"]
+[ext_resource type="Script" path="res://Assets/Game/Notes/NoteSkin.gd" id="1_imses"]
+[ext_resource type="Texture2D" uid="uid://dqwlmn0bts64u" path="res://Assets/Game/Notes/TapNote/TapNoteTop.png" id="1_t5srw"]
+[ext_resource type="Texture2D" uid="uid://76alj1soi064" path="res://Assets/Game/Notes/TapNote/TapNoteMiddle.png" id="2_xjor0"]
+
+[node name="TapNoteSkin" type="Node2D"]
+scale = Vector2(0.08, 0.08)
+script = ExtResource("1_imses")
+
+[node name="Base" type="Sprite2D" parent="."]
+modulate = Color(0.886275, 0.423529, 0.109804, 1)
+self_modulate = Color(1, 1, 1, 0.5)
+texture = ExtResource("1_30o7l")
+
+[node name="Middle" type="Sprite2D" parent="."]
+self_modulate = Color(1, 1, 1, 0.560784)
+texture = ExtResource("2_xjor0")
+
+[node name="Top" type="Sprite2D" parent="."]
+self_modulate = Color(2, 2, 2, 0.261)
+texture = ExtResource("1_t5srw")

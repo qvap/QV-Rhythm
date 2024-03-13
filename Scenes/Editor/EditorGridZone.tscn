@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b48ntfn3f2ct0"]
+
+[ext_resource type="Script" path="res://Scripts/Editor/EditorGridZone.gd" id="1_ipicf"]
+
+[node name="EditorGridZone" type="Node2D"]
+script = ExtResource("1_ipicf")

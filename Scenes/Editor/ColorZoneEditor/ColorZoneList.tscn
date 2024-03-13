@@ -1,0 +1,119 @@
+[gd_scene load_steps=8 format=3 uid="uid://cyh0ebwl0lywh"]
+
+[ext_resource type="Script" path="res://Scripts/Editor/ColorZoneEditor/ColorZoneList.gd" id="1_84ws1"]
+[ext_resource type="Script" path="res://addons/SmoothScroll/SmoothScrollContainer.gd" id="2_qrdhm"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0118m"]
+bg_color = Color(0.0784314, 0.0784314, 0.0784314, 1)
+corner_radius_bottom_right = 25
+corner_radius_bottom_left = 25
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hl1at"]
+bg_color = Color(0.105882, 0.105882, 0.105882, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0, 0, 0, 0.129412)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cwk78"]
+bg_color = Color(0.239216, 0.239216, 0.239216, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0, 0, 0, 0.129412)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v8onq"]
+content_margin_right = 15.0
+bg_color = Color(0.117647, 0.117647, 0.117647, 1)
+corner_radius_bottom_right = 25
+corner_radius_bottom_left = 25
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7heu5"]
+content_margin_right = 15.0
+bg_color = Color(0.188235, 0.188235, 0.188235, 1)
+corner_radius_bottom_right = 25
+corner_radius_bottom_left = 25
+
+[node name="ColorZoneList" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+grow_horizontal = 2
+grow_vertical = 0
+script = ExtResource("1_84ws1")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PanelContainer" type="PanelContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0118m")
+
+[node name="ContentContainer" type="VBoxContainer" parent="HBoxContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="SmoothScrollContainer" type="ScrollContainer" parent="HBoxContainer/PanelContainer/ContentContainer"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+horizontal_scroll_mode = 0
+script = ExtResource("2_qrdhm")
+speed = 10.0
+damping_scroll = 0.3
+damping_drag = 0.3
+drag_with_touch = false
+follow_focus_ = false
+allow_horizontal_scroll = false
+auto_allow_scroll = false
+friction_scroll = 0.8
+friction_drag = 0.8
+hide_scrollbar_over_time = true
+scrollbar_hide_time = 1.0
+scrollbar_fade_out_time = 0.2
+
+[node name="SavedZonesContainer" type="VBoxContainer" parent="HBoxContainer/PanelContainer/ContentContainer/SmoothScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Button" type="Button" parent="HBoxContainer/PanelContainer/ContentContainer/SmoothScrollContainer/SavedZonesContainer"]
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 1
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_hl1at")
+theme_override_styles/hover = SubResource("StyleBoxFlat_cwk78")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_hl1at")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_hl1at")
+theme_override_styles/focus = SubResource("StyleBoxFlat_hl1at")
+text = "Open Color Editor"
+
+[node name="Button" type="Button" parent="HBoxContainer/PanelContainer/ContentContainer"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+size_flags_vertical = 8
+focus_mode = 0
+mouse_filter = 1
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_v8onq")
+theme_override_styles/hover = SubResource("StyleBoxFlat_7heu5")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_v8onq")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_v8onq")
+theme_override_styles/focus = SubResource("StyleBoxFlat_v8onq")
+text = "Color Zones"
+alignment = 2
+
+[connection signal="pressed" from="HBoxContainer/PanelContainer/ContentContainer/SmoothScrollContainer/SavedZonesContainer/Button" to="." method="open_color_editor"]
+[connection signal="pressed" from="HBoxContainer/PanelContainer/ContentContainer/Button" to="." method="toggle_panel"]

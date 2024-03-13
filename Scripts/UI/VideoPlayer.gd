@@ -18,7 +18,9 @@ func _ready() -> void:
 func load_video(video_path: String) -> void:
 	BLUR.material.set_shader_parameter("blur", blur)
 	if FileAccess.file_exists(video_path):
-		VIDEO_STREAM_PLAYER.stream = load(video_path)
+		var video_file: FFmpegVideoStream = FFmpegVideoStream.new()
+		video_file.file = video_path
+		VIDEO_STREAM_PLAYER.stream = video_file
 	else:
 		push_error("Не найдено видео! Путь: "+video_path)
 

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://intry568ibqs"]
+
+[ext_resource type="Script" path="res://Scripts/Autoload/SceneLoader.gd" id="1_luubx"]
+
+[node name="SceneLoader" type="Node"]
+script = ExtResource("1_luubx")
+
+[node name="LoadingScreenLayer" type="CanvasLayer" parent="."]
+layer = 110

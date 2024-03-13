@@ -1,22 +1,109 @@
-[gd_scene load_steps=4 format=3 uid="uid://dsv66nh8l8aaj"]
+[gd_scene load_steps=10 format=3 uid="uid://dsv66nh8l8aaj"]
 
 [ext_resource type="Script" path="res://Scripts/Notes/Road.gd" id="1_0eda6"]
+[ext_resource type="Texture2D" uid="uid://bhgiumh4rttmk" path="res://Assets/Game/RoadButton.png" id="2_qqqcg"]
+[ext_resource type="Texture2D" uid="uid://csbc76fjop65k" path="res://Assets/Game/RoadButtonOutline.png" id="3_imr1o"]
+[ext_resource type="PackedScene" uid="uid://pl0m6763y6mp" path="res://Scenes/Notes/HitGradient.tscn" id="4_05woo"]
 
-[sub_resource type="Gradient" id="Gradient_mum26"]
-colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+[sub_resource type="Gradient" id="Gradient_6sxdb"]
+offsets = PackedFloat32Array(0, 0.605128, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0)
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_k6son"]
-gradient = SubResource("Gradient_mum26")
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_c7ur4"]
+gradient = SubResource("Gradient_6sxdb")
+width = 40
+height = 512
+fill_to = Vector2(0, 1)
+
+[sub_resource type="Animation" id="Animation_qyrnr"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Outline:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.08, 0.08)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Outline:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_e0tts"]
+resource_name = "press"
+length = 0.25
+step = 0.05
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Outline:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.25),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.08, 0.08), Vector2(0.1, 0.1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Outline:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.25),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_m8li1"]
+_data = {
+"RESET": SubResource("Animation_qyrnr"),
+"press": SubResource("Animation_e0tts")
+}
 
 [node name="NoteRoad" type="Node2D"]
 script = ExtResource("1_0eda6")
+
+[node name="BG" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.75)
+z_index = -1
+position = Vector2(0, -50)
+texture = SubResource("GradientTexture2D_c7ur4")
 
 [node name="NoteSpawn" type="Marker2D" parent="."]
 position = Vector2(0, -450)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(1, 1, 1, 0.5)
-scale = Vector2(0.5, 0.1)
-texture = SubResource("GradientTexture2D_k6son")
+scale = Vector2(0.08, 0.08)
+texture = ExtResource("2_qqqcg")
 
 [node name="NoteHolder" type="Node2D" parent="."]
+
+[node name="PressAnimation" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_m8li1")
+}
+
+[node name="Outline" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0)
+scale = Vector2(0.08, 0.08)
+texture = ExtResource("3_imr1o")
+
+[node name="HitGradient" parent="." instance=ExtResource("4_05woo")]

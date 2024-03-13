@@ -22,18 +22,28 @@ var SLIDER := preload("res://Scenes/Notes/SliderNote.tscn")
 
 @onready var NOTESPAWN := $NoteSpawn
 @onready var NOTEHOLDER := $NoteHolder
+@onready var PRESS_ANIMATION: AnimationPlayer = $PressAnimation
+@onready var HIT_GRADIENT: HitGradient = $HitGradient
+
 var GAMESPACE: Node2D
 var ROADS : Array # get_parent().get_children()
 
 var NOTESPAWN_POSITION : Vector2
 var ROAD_POSITION_MARKER : Marker2D
 
+var ALL_COLORS : Array # Список всех цветов
+var CURRENT_COLOR : Color # Цвет, который необходимо выбирать в данный момент времени
+var PENDING_COLOR_INDEX : int = 0 # Индекс цвета, который должен быть выбран CURRENT_COLOR
+
 var ALL_NOTES : Array # Список всех нот
-var PENDING_NOTE_INDEX := 0 # Индекс ноты, которую нужно заспавнить
+var MAX_SPAWN_CYCLES: int = 6 # Кол-во элементов, которые нужно проходить в один момент в spawn_notes
+var PENDING_NOTE_INDEX : int = 0 # Индекс ноты, которую нужно заспавнить
 var ALL_SPAWNED_NOTES: Array # Список всех появляющихся нот
 var NOTES_TO_HIT : Array # Список нот, которые находятся в зоне удара
 
 var PRESSED := false # Проверяет, нажата ли клавиша
+
+var BOT_SHOULD_HOLD := false # Указывает, нужно ли боту задержать клавишу
 
 # ХОЛД НОТЫ
 var PENDING_HOLD_NOTE : HoldNote # Ставит в очередь нажатую холд ноту
@@ -66,9 +76,6 @@ func get_roads_array() -> void:
 
 #region process
 func _process(_delta) -> void:
-	if Input.is_action_pressed(Global.CORRESPONDING_INPUTS[Global.CURRENT_CHART_SIZE][road_index]):
-		$Sprite2D.modulate.a = 0.25
-	else: $Sprite2D.modulate.a = 0.5
 	position = ROAD_POSITION_MARKER.position
 	if !RELEASE_HOLDING_NOTE:
 		holding_line_animation_check()
@@ -84,55 +91,37 @@ func _process(_delta) -> void:
 #region physics_process
 func _physics_process(_delta) -> void:
 	
-	# Спавнит ноты
-	if PENDING_NOTE_INDEX < len(ALL_NOTES):
-		
-		var pending_note = ALL_NOTES[PENDING_NOTE_INDEX]
-		
-		if (pending_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] *\
-		Conductor.s_per_quarter) <= Conductor.chart_position:
-			spawn_note(pending_note)
-			PENDING_NOTE_INDEX += 1
+	release_holding_note()
+	
+	release_sliding_note()
+	
+	connect_holding_note()
+	
+	connect_sliding_note()
+	
+	holding_note_check()
+	
+	sliding_note_check()
+	
+	#region Тут важна последовательность
+	update_colors()
+	
+	spawn_notes()
+	#endregion
 	
 	# При первой возможности пушит слайдер из очереди в нажатый
-	if CURRENT_CONTROL_SLIDER == null:
+	if CURRENT_CONTROL_SLIDER == null and PENDING_CONTROL_SLIDER != null:
 		CURRENT_CONTROL_SLIDER = PENDING_CONTROL_SLIDER
 		PENDING_CONTROL_SLIDER = null
 	# Так же и с холд нотами
-	if CURRENT_HOLD_NOTE == null:
+	if CURRENT_HOLD_NOTE == null and PENDING_HOLD_NOTE != null:
 		CURRENT_HOLD_NOTE = PENDING_HOLD_NOTE
 		PENDING_HOLD_NOTE = null
 	
-	# Смотрит, какие ноты есть в зоне
-	if len(ALL_SPAWNED_NOTES) != 0:
-		var array_front_note: Note = ALL_SPAWNED_NOTES[0]
-		if Scoring.check_note_zone((array_front_note.SPAWN_QUARTERS * Conductor.s_per_quarter)\
-		+ Conductor.note_speed):
-			NOTES_TO_HIT.push_back(array_front_note)
-			ALL_SPAWNED_NOTES.pop_front() #ALL_SPAWNED_NOTES.remove_at(0)
+	update_notes()
 	
-	# Считывает нажатия
-	if Input.is_action_just_pressed(Global.CORRESPONDING_INPUTS[Global.CURRENT_CHART_SIZE][road_index]):
-		PRESSED = true
-		road_input()
-	elif Input.is_action_just_released(Global.CORRESPONDING_INPUTS[Global.CURRENT_CHART_SIZE][road_index]):
-		PRESSED = false
-		road_input()
-	
-	# Смотрит, какие ноты уже пролетели и вызывает у них miss_note
-	if len(NOTES_TO_HIT) != 0:
-		var note = NOTES_TO_HIT[0]
-		if !Scoring.check_note_zone((note.SPAWN_QUARTERS * Conductor.s_per_quarter)\
-		+ Conductor.note_speed):
-			NOTES_TO_HIT.erase(note)
-			if (note.NOTE_TYPE == Global.NOTE_TYPE.TAPNOTE) or\
-			(note.NOTE_TYPE == Global.CONTROL_TYPE.HOLDCONTROL) or\
-			(note.NOTE_TYPE == Global.CONTROL_TYPE.SLIDERCONTROL):
-				note.miss_note()
-				Scoring.judge(note)
-			else:
-				note.miss_note()
-	
+	bot_monitor()
+
 	# Проверка для начала холд нот (ОНО РАБОТАЕТ УРА)
 	# Я забыл почему я это закомментил
 	# UPD: А, это если вдруг я захочу сделать удерживание ноты после пропуска начала
@@ -141,48 +130,143 @@ func _physics_process(_delta) -> void:
 	#	if ((note.SPAWN_TIME + Conductor.note_speed) < Conductor.chart_position):
 	#		pass
 			#init_holding_note(note) # на случай, если нужно будет удерживать холд ноту даже после её пропуска
-	
-	
-	release_holding_note()
-	
-	release_sliding_note()
-	
-	holding_note_check()
-	
-	sliding_note_check()
-	
-	connect_holding_note()
-	
-	connect_sliding_note()
+#endregion
+
+# Спавнит ноты
+func spawn_notes() -> void:
+	if len(ALL_NOTES) != 0 and PENDING_NOTE_INDEX <= len(ALL_NOTES):
+		for pending_note_index in range(PENDING_NOTE_INDEX, PENDING_NOTE_INDEX + MAX_SPAWN_CYCLES):
+			if pending_note_index < len(ALL_NOTES):
+				var pending_note: Array = ALL_NOTES[pending_note_index]
+				if (pending_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] *\
+				Conductor.s_per_quarter) + Conductor.bpm_change_time <= Conductor.chart_position:
+					spawn_note(pending_note)
+					PENDING_NOTE_INDEX += 1
+	# Коммент снизу - быстрофикс проблемы неправильного порядка спавна нот
+	#if len(ALL_NOTES) != 0:
+	#	for pending_note in ALL_NOTES:
+	#		if (pending_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] *\
+	#		Conductor.s_per_quarter) + Conductor.bpm_change_time <= Conductor.chart_position:
+	#			spawn_note(pending_note)
+	#			ALL_NOTES.erase(pending_note)
+
+func update_notes() -> void:
+	# Смотрит, какие ноты есть в зоне и удаляет те, которые уже пролетели
+	if len(ALL_SPAWNED_NOTES) != 0:
+		var delete: Array = []
+		for note_index in range(len(ALL_SPAWNED_NOTES)):
+			var note: Note = ALL_SPAWNED_NOTES[note_index]
+			var before_note: Note
+			var after_note: Note
+			if note_index > 0 and !(ALL_SPAWNED_NOTES[note_index - 1] in delete):
+				before_note = ALL_SPAWNED_NOTES[note_index - 1]
+			if note_index < len(ALL_SPAWNED_NOTES) - 1 and !(ALL_SPAWNED_NOTES[note_index + 1] in delete):
+				after_note = ALL_SPAWNED_NOTES[note_index + 1]
+			if Score.check_note_zone(note, before_note, after_note):
+				if !(note in NOTES_TO_HIT):
+					NOTES_TO_HIT.push_back(note)
+			else:
+				if (Conductor.song_position > (note.SPAWN_QUARTERS * Conductor.s_per_quarter)) and\
+				(note in NOTES_TO_HIT):
+					delete.push_back(note)
+					if (note.NOTE_TYPE == Global.NOTE_TYPE.TAPNOTE) or\
+					(note.NOTE_TYPE == Global.CONTROL_TYPE.HOLDCONTROL) or\
+					(note.NOTE_TYPE == Global.CONTROL_TYPE.SLIDERCONTROL):
+						note.miss_note()
+						Scoring.judge_miss(note)
+					else:
+						note.miss_note()
+		for note in delete:
+			ALL_SPAWNED_NOTES.erase(note)
+			NOTES_TO_HIT.erase(note)
+
+func update_colors() -> void:
+	if len(ALL_COLORS) != 0 and PENDING_COLOR_INDEX < len(ALL_COLORS):
+		var color_array: Array = ALL_COLORS[PENDING_COLOR_INDEX]
+		var color_quarter_to_spawn: int = color_array[Global.COLORWAY_CHART_STRUCTURE.QUARTER_TO_SPAWN]
+		var color: Color = color_array[Global.COLORWAY_CHART_STRUCTURE.COLORWAY]
+		if (color_quarter_to_spawn * Conductor.s_per_quarter) <= Conductor.chart_position:
+			CURRENT_COLOR = color
+			PENDING_COLOR_INDEX += 1
+
+#region Функции бота
+func bot_play_press() -> void:
+	PRESSED = true
+	road_input()
+	if BOT_SHOULD_HOLD:
+		return
+	PRESSED = false
+
+func bot_play_release() -> void:
+	if Settings.BOT_PLAY:
+		BOT_SHOULD_HOLD = false
+		PRESSED = false
+
+func bot_monitor() -> void:
+	if len(NOTES_TO_HIT) != 0:
+		for note in NOTES_TO_HIT:
+			if (Settings.BOT_PLAY) and ((note.SPAWN_QUARTERS * Conductor.s_per_quarter) <= Conductor.song_position)\
+			and !(note.NOTE_TYPE in Global.CONTROL_TYPE):
+				bot_play_press()
 #endregion
 
 # Вызывается, когда срабатывает изменение PRESSED
 func check_note_hit() -> void:
-	var note = NOTES_TO_HIT[0]
-	match note.NOTE_TYPE:
-		Global.NOTE_TYPE.TAPNOTE:
-			if PRESSED:
-				NOTES_TO_HIT.erase(note)
+	var one_hit: bool = false # тап и холд ноты можно нажать только первыми в списке
+	var one_slider_hit: bool = false # слайдер отдельно, т.к. нужно учесть,
+									#что слайдер может быть на дороге с обычной нотой
+	var delete: Array = []
+	for note in NOTES_TO_HIT:
+		match note.NOTE_TYPE:
+			Global.NOTE_TYPE.TAPNOTE:
+				if one_hit:
+					continue
+				delete.push_back(note)
+				ALL_SPAWNED_NOTES.pop_front()
 				Scoring.judge(note)
+				note.hit_note()
 				QUEUE_HITSOUND = true
 				QUEUE_HITSOUND_TIME = note.SPAWN_QUARTERS * Conductor.s_per_quarter
-				note.queue_free()
-		Global.CONTROL_TYPE.HOLDCONTROL:
-			if PRESSED:
-				NOTES_TO_HIT.erase(note)
+				HIT_GRADIENT.play_anim(note.COLOR)
+				one_hit = true
+			Global.CONTROL_TYPE.HOLDCONTROL:
+				if one_hit:
+					continue
+				BOT_SHOULD_HOLD = true
+				delete.push_back(note)
+				ALL_SPAWNED_NOTES.pop_front()
 				Scoring.judge(note)
 				init_holding_note(note)
+				note.hit_note()
 				QUEUE_HITSOUND = true
 				QUEUE_HITSOUND_TIME = note.SPAWN_QUARTERS * Conductor.s_per_quarter
-				note.HOLD_TO_CONTROL.SKIN.visible = false
-		Global.CONTROL_TYPE.SLIDERCONTROL:
-			if PRESSED:
-				NOTES_TO_HIT.erase(note)
+				HIT_GRADIENT.play_anim(note.COLOR)
+				one_hit = true
+			Global.CONTROL_TYPE.SLIDERCONTROL:
+				if one_slider_hit:
+					continue
+				BOT_SHOULD_HOLD = true
+				delete.push_back(note)
+				ALL_SPAWNED_NOTES.pop_front()
 				Scoring.judge(note)
 				init_sliding_note(note)
+				note.hit_note()
 				QUEUE_HITSOUND = true
 				QUEUE_HITSOUND_TIME = note.SPAWN_QUARTERS * Conductor.s_per_quarter
-				note.SLIDER_TO_CONTROL.SKIN.visible = false
+				one_slider_hit = true
+	if len(delete) != 0:
+		for note in delete:
+			NOTES_TO_HIT.erase(note)
+		delete = []
+
+func _unhandled_input(event: InputEvent) -> void:
+	if Settings.BOT_PLAY:
+		return
+	if event.is_action_pressed(Global.CORRESPONDING_INPUTS[Global.CURRENT_CHART_SIZE][road_index]):
+		PRESSED = true
+		road_input()
+	elif event.is_action_released(Global.CORRESPONDING_INPUTS[Global.CURRENT_CHART_SIZE][road_index]):
+		PRESSED = false
 
 func spawn_note(note: Array) -> void:
 	var spawn_quarters = note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN]
@@ -192,10 +276,12 @@ func spawn_note(note: Array) -> void:
 	match note_type:
 		Global.NOTE_TYPE.TAPNOTE:
 			note_instantiate = TAPNOTE.instantiate()
+			note_instantiate.COLOR = CURRENT_COLOR
 		Global.NOTE_TYPE.HOLDNOTE:
 			note_instantiate = HOLDNOTE.instantiate()
 			note_instantiate.NOTE_TYPE = Global.NOTE_TYPE.HOLDNOTE
 			note_instantiate.NOTE_LENGTH = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]
+			note_instantiate.COLOR = CURRENT_COLOR
 			PASS_HOLD_NODE.push_back(note_instantiate)
 		Global.CONTROL_TYPE.HOLDCONTROL:
 			note_instantiate = HOLDNOTE.instantiate()
@@ -215,6 +301,7 @@ func spawn_note(note: Array) -> void:
 			note_instantiate.ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
 			note_instantiate.NEXT_ROAD = next_road
 			note_instantiate.NEXT_NOTE_SPAWN_QUARTER = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_SPAWN_QUARTER]
+			note_instantiate.COLOR = CURRENT_COLOR
 			next_road.PASS_SLIDER_NODE.push_back(note_instantiate)
 		Global.NOTE_TYPE.SLIDERTICK:
 			note_instantiate = SLIDER.instantiate()
@@ -223,13 +310,16 @@ func spawn_note(note: Array) -> void:
 			note_instantiate.ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
 			note_instantiate.NEXT_ROAD = next_road
 			note_instantiate.NEXT_NOTE_SPAWN_QUARTER = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_SPAWN_QUARTER]
+			note_instantiate.COLOR = CURRENT_COLOR
 			next_road.PASS_SLIDER_NODE.push_back(note_instantiate)
 		Global.NOTE_TYPE.SLIDEREND:
 			note_instantiate = SLIDER.instantiate()
 			note_instantiate.NOTE_TYPE = Global.NOTE_TYPE.SLIDEREND
 			note_instantiate.ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
+			note_instantiate.COLOR = CURRENT_COLOR
 		Global.CONTROL_TYPE.SLIDERCONTROL:
 			note_instantiate = SLIDER.instantiate()
+			note_instantiate.ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
 			note_instantiate.NOTE_TYPE = Global.CONTROL_TYPE.SLIDERCONTROL
 			CONNECT_SLIDER_TO_CONTROL = note_instantiate
 		Global.CONTROL_TYPE.SLIDERCONTROLTICK:
@@ -249,6 +339,7 @@ func spawn_note(note: Array) -> void:
 func connect_holding_note() -> void:
 	if CONNECT_HOLD_TO_CONTROL != null and len(PASS_HOLD_NODE) != 0:
 		CONNECT_HOLD_TO_CONTROL.HOLD_TO_CONTROL = PASS_HOLD_NODE[0]
+		CONNECT_HOLD_TO_CONTROL.COLOR = PASS_HOLD_NODE[0].COLOR
 		CONNECT_HOLD_TO_CONTROL = null
 		PASS_HOLD_NODE.pop_front()
 
@@ -258,7 +349,10 @@ func init_holding_note(note: HoldNote) -> void:
 
 # Считает HoldNoteTick и HoldNoteEnd если удержана холд нота
 func holding_note_check() -> void:
-	if len(NOTES_TO_HIT) == 0 or CURRENT_HOLD_NOTE == null:
+	if CURRENT_HOLD_NOTE == null:
+		return
+	HIT_GRADIENT.play_holding_anim(CURRENT_HOLD_NOTE.COLOR)
+	if len(NOTES_TO_HIT) == 0:
 		return
 	var delete := [] # в доках написано не удалять значения в списке когда идёт цикл, поэтому я добавил это
 	for notetick in NOTES_TO_HIT:
@@ -278,6 +372,7 @@ func holding_note_check() -> void:
 					notetick.queue_free()
 					RELEASE_HOLDING_NOTE = true
 	for notetick in delete:
+		ALL_SPAWNED_NOTES.erase(notetick)
 		NOTES_TO_HIT.erase(notetick)
 	delete = []
 
@@ -285,16 +380,13 @@ func holding_note_check() -> void:
 func release_holding_note() -> void:
 	if CURRENT_HOLD_NOTE != null:
 		if ((CURRENT_HOLD_NOTE.SPAWN_QUARTERS + CURRENT_HOLD_NOTE.NOTE_LENGTH) *\
-		Conductor.s_per_quarter) < Conductor.song_position:
-			if RELEASE_HOLDING_NOTE:
-				QUEUE_HITSOUND_TIME = (CURRENT_HOLD_NOTE.SPAWN_QUARTERS + CURRENT_HOLD_NOTE.NOTE_LENGTH) *\
-				Conductor.s_per_quarter
-				QUEUE_HITSOUND = true
+		Conductor.s_per_quarter) <= Conductor.song_position:
 			CURRENT_HOLD_NOTE.HOLD_TO_CONTROL.HOLDING = false
 			CURRENT_HOLD_NOTE.HOLD_TO_CONTROL.queue_free()
 			CURRENT_HOLD_NOTE.queue_free()
 			CURRENT_HOLD_NOTE = null
 			RELEASE_HOLDING_NOTE = false
+			bot_play_release()
 
 func holding_line_animation_check() -> void:
 	if CURRENT_HOLD_NOTE == null:
@@ -311,7 +403,8 @@ func holding_line_animation_check() -> void:
 #region СЛАЙДЕР НОТЫ
 # Передаёт контроллеру слайдер с другой дорожки
 func connect_sliding_note() -> void:
-	if CONNECT_SLIDER_TO_CONTROL != null and len(PASS_SLIDER_NODE) > 0:
+	if CONNECT_SLIDER_TO_CONTROL != null and len(PASS_SLIDER_NODE) > 0 and\
+	PASS_SLIDER_NODE[0].ID == CONNECT_SLIDER_TO_CONTROL.ID:
 		CONNECT_SLIDER_TO_CONTROL.SLIDER_TO_CONTROL = PASS_SLIDER_NODE[0]
 		CONNECT_SLIDER_TO_CONTROL = null
 		PASS_SLIDER_NODE.pop_front()
@@ -350,6 +443,7 @@ func sliding_note_check() -> void:
 					false:
 						continue
 	for notetick in delete:
+		ALL_SPAWNED_NOTES.erase(notetick)
 		NOTES_TO_HIT.erase(notetick)
 	delete = []
 
@@ -366,6 +460,7 @@ func release_sliding_note() -> void:
 			CURRENT_CONTROL_SLIDER = null
 			RELEASE_SLIDER = false
 			delete_slider_endpoint()
+			bot_play_release()
 
 # Удаляет конечную точку слайдера
 func delete_slider_endpoint() -> void:
@@ -386,6 +481,9 @@ func sliding_line_animation_check() -> void:
 
 # Если нажата кнопка, вызывает функцию на удар по ноте
 func road_input() -> void:
-	if len(NOTES_TO_HIT) == 0:
-		return
-	check_note_hit()
+	if PRESSED:
+		PRESS_ANIMATION.stop()
+		PRESS_ANIMATION.play("press")
+		if len(NOTES_TO_HIT) == 0:
+			return
+		check_note_hit()
