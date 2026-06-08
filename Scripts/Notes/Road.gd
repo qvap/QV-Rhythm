@@ -35,7 +35,7 @@ var ALL_COLORS : Array # Список всех цветов
 var CURRENT_COLOR : Color # Цвет, который необходимо выбирать в данный момент времени
 var PENDING_COLOR_INDEX : int = 0 # Индекс цвета, который должен быть выбран CURRENT_COLOR
 
-var ALL_NOTES : Array # Список всех нот
+var ALL_NOTES : Array[ChartNote] # Список всех нот (включая фантомные контроль-ноты)
 var MAX_SPAWN_CYCLES: int = 6 # Кол-во элементов, которые нужно проходить в один момент в spawn_notes
 var PENDING_NOTE_INDEX : int = 0 # Индекс ноты, которую нужно заспавнить
 var ALL_SPAWNED_NOTES: Array # Список всех появляющихся нот
@@ -137,8 +137,8 @@ func spawn_notes() -> void:
 	if len(ALL_NOTES) != 0 and PENDING_NOTE_INDEX <= len(ALL_NOTES):
 		for pending_note_index in range(PENDING_NOTE_INDEX, PENDING_NOTE_INDEX + MAX_SPAWN_CYCLES):
 			if pending_note_index < len(ALL_NOTES):
-				var pending_note: Array = ALL_NOTES[pending_note_index]
-				if (pending_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] *\
+				var pending_note: ChartNote = ALL_NOTES[pending_note_index]
+				if (pending_note.quarter *\
 				Conductor.s_per_quarter) + Conductor.bpm_change_time <= Conductor.chart_position:
 					spawn_note(pending_note)
 					PENDING_NOTE_INDEX += 1
@@ -182,11 +182,9 @@ func update_notes() -> void:
 
 func update_colors() -> void:
 	if len(ALL_COLORS) != 0 and PENDING_COLOR_INDEX < len(ALL_COLORS):
-		var color_array: Array = ALL_COLORS[PENDING_COLOR_INDEX]
-		var color_quarter_to_spawn: int = color_array[Global.COLORWAY_CHART_STRUCTURE.QUARTER_TO_SPAWN]
-		var color: Color = color_array[Global.COLORWAY_CHART_STRUCTURE.COLORWAY]
-		if (color_quarter_to_spawn * Conductor.s_per_quarter) <= Conductor.chart_position:
-			CURRENT_COLOR = color
+		var color_entry: Dictionary = ALL_COLORS[PENDING_COLOR_INDEX]
+		if (color_entry["quarter"] * Conductor.s_per_quarter) <= Conductor.chart_position:
+			CURRENT_COLOR = color_entry["color"]
 			PENDING_COLOR_INDEX += 1
 
 #region Функции бота
@@ -268,11 +266,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_released(Global.CORRESPONDING_INPUTS[Global.CURRENT_CHART_SIZE][road_index]):
 		PRESSED = false
 
-func spawn_note(note: Array) -> void:
-	var spawn_quarters = note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN]
-	var note_type: int = note[Global.NOTE_CHART_STRUCTURE.TYPE]
+func spawn_note(note: ChartNote) -> void:
+	var note_type: int = note.type
 	var note_instantiate
-	
+
 	match note_type:
 		Global.NOTE_TYPE.TAPNOTE:
 			note_instantiate = TAPNOTE.instantiate()
@@ -280,13 +277,13 @@ func spawn_note(note: Array) -> void:
 		Global.NOTE_TYPE.HOLDNOTE:
 			note_instantiate = HOLDNOTE.instantiate()
 			note_instantiate.NOTE_TYPE = Global.NOTE_TYPE.HOLDNOTE
-			note_instantiate.NOTE_LENGTH = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]
+			note_instantiate.NOTE_LENGTH = note.duration
 			note_instantiate.COLOR = CURRENT_COLOR
 			PASS_HOLD_NODE.push_back(note_instantiate)
 		Global.CONTROL_TYPE.HOLDCONTROL:
 			note_instantiate = HOLDNOTE.instantiate()
 			note_instantiate.NOTE_TYPE = Global.CONTROL_TYPE.HOLDCONTROL
-			note_instantiate.NOTE_LENGTH = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]
+			note_instantiate.NOTE_LENGTH = note.duration
 			CONNECT_HOLD_TO_CONTROL = note_instantiate
 		Global.CONTROL_TYPE.HOLDCONTROLTICK:
 			note_instantiate = HOLDNOTE.instantiate()
@@ -296,30 +293,30 @@ func spawn_note(note: Array) -> void:
 			note_instantiate.NOTE_TYPE = Global.CONTROL_TYPE.HOLDCONTROLEND
 		Global.NOTE_TYPE.SLIDER:
 			note_instantiate = SLIDER.instantiate()
-			var next_road = ROADS[note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_ROAD]]
+			var next_road = ROADS[note.next_road]
 			note_instantiate.NOTE_TYPE = Global.NOTE_TYPE.SLIDER
-			note_instantiate.ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
+			note_instantiate.ID = note.slider_id
 			note_instantiate.NEXT_ROAD = next_road
-			note_instantiate.NEXT_NOTE_SPAWN_QUARTER = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_SPAWN_QUARTER]
+			note_instantiate.NEXT_NOTE_SPAWN_QUARTER = note.next_quarter
 			note_instantiate.COLOR = CURRENT_COLOR
 			next_road.PASS_SLIDER_NODE.push_back(note_instantiate)
 		Global.NOTE_TYPE.SLIDERTICK:
 			note_instantiate = SLIDER.instantiate()
-			var next_road = ROADS[note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_ROAD]]
+			var next_road = ROADS[note.next_road]
 			note_instantiate.NOTE_TYPE = Global.NOTE_TYPE.SLIDERTICK
-			note_instantiate.ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
+			note_instantiate.ID = note.slider_id
 			note_instantiate.NEXT_ROAD = next_road
-			note_instantiate.NEXT_NOTE_SPAWN_QUARTER = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.NEXT_SPAWN_QUARTER]
+			note_instantiate.NEXT_NOTE_SPAWN_QUARTER = note.next_quarter
 			note_instantiate.COLOR = CURRENT_COLOR
 			next_road.PASS_SLIDER_NODE.push_back(note_instantiate)
 		Global.NOTE_TYPE.SLIDEREND:
 			note_instantiate = SLIDER.instantiate()
 			note_instantiate.NOTE_TYPE = Global.NOTE_TYPE.SLIDEREND
-			note_instantiate.ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
+			note_instantiate.ID = note.slider_id
 			note_instantiate.COLOR = CURRENT_COLOR
 		Global.CONTROL_TYPE.SLIDERCONTROL:
 			note_instantiate = SLIDER.instantiate()
-			note_instantiate.ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
+			note_instantiate.ID = note.slider_id
 			note_instantiate.NOTE_TYPE = Global.CONTROL_TYPE.SLIDERCONTROL
 			CONNECT_SLIDER_TO_CONTROL = note_instantiate
 		Global.CONTROL_TYPE.SLIDERCONTROLTICK:
@@ -328,8 +325,8 @@ func spawn_note(note: Array) -> void:
 		Global.CONTROL_TYPE.SLIDERCONTROLEND:
 			note_instantiate = SLIDER.instantiate()
 			note_instantiate.NOTE_TYPE = Global.CONTROL_TYPE.SLIDERCONTROLEND
-	
-	note_instantiate.SPAWN_QUARTERS = spawn_quarters
+
+	note_instantiate.SPAWN_QUARTERS = note.quarter
 	if (note_type != Global.NOTE_TYPE.SLIDER) and (note_type != Global.NOTE_TYPE.SLIDERTICK) and (note_type != Global.NOTE_TYPE.HOLDNOTE):
 		# Не нужно, чтобы оно считывало попадания по не контроллерам
 		ALL_SPAWNED_NOTES.push_back(note_instantiate)
