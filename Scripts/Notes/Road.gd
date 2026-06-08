@@ -142,13 +142,6 @@ func spawn_notes() -> void:
 				Conductor.s_per_quarter) + Conductor.bpm_change_time <= Conductor.chart_position:
 					spawn_note(pending_note)
 					PENDING_NOTE_INDEX += 1
-	# Коммент снизу - быстрофикс проблемы неправильного порядка спавна нот
-	#if len(ALL_NOTES) != 0:
-	#	for pending_note in ALL_NOTES:
-	#		if (pending_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] *\
-	#		Conductor.s_per_quarter) + Conductor.bpm_change_time <= Conductor.chart_position:
-	#			spawn_note(pending_note)
-	#			ALL_NOTES.erase(pending_note)
 
 func update_notes() -> void:
 	# Смотрит, какие ноты есть в зоне и удаляет те, которые уже пролетели

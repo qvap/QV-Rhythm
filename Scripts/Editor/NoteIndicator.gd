@@ -7,7 +7,6 @@ class_name EditorIndicator
 
 @export var TYPE: int
 @export var SLIDER_ID: int
-@export var HOLD_CONNECTED: bool = false
 @export var COLOR: Color = Color(1, 1, 1)
 @export var COLOR_ZONE_NAME: String = "Color"
 

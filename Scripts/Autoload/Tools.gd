@@ -21,21 +21,6 @@ func save_json(json_path: String, content: Dictionary):
 	file.store_string(JSON.stringify(content))
 	file.close()
 
-# Создаёт пустой список, соответствующий структуре ноты в Global
-func create_structured_note_array(with_additional_info: bool) -> Array:
-	var structured_note: Array = []
-	if with_additional_info:
-		structured_note.resize(len(Global.NOTE_CHART_STRUCTURE.values()))
-	else:
-		structured_note.resize(len(Global.NOTE_CHART_STRUCTURE.values()) - 1)
-	return structured_note
-
-# Создаёт пустой список, соответствующий структуре colorway в Global
-func create_structured_colorway_array() -> Array:
-	var structured_colorway: Array = []
-	structured_colorway.resize(len(Global.COLORWAY_CHART_STRUCTURE.values()))
-	return structured_colorway
-
 func get_note_hit_time(note: Note) -> float:
 	if note:
 		return note.SPAWN_QUARTERS * Conductor.s_per_quarter
