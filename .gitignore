@@ -5,6 +5,8 @@
 *.blend1
 *.flp
 
+# Custom Maps
+CustomMaps/
 # Claude Code
 CLAUDE.md
 .claude/

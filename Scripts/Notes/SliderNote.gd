@@ -45,13 +45,6 @@ func setup_line() -> void:
 	LINE_NODE.points[0] = Vector2(0.0, 0.0)
 	LINE_INITIALIZED = true
 
-# Расставляет точки линии
-func draw_slider_line_end() -> void:
-	await get_tree().process_frame
-	var _y_compensate : float = NEXT_ROAD.position.y - ROAD_POSITION.y
-	LINE_NODE.points[1] = Vector2(NEXT_ROAD.global_position.x - global_position.x, _y_compensate - (NOTE_SPEED * Conductor.s_per_quarter *\
-	(NEXT_NOTE_SPAWN_QUARTER - SPAWN_QUARTERS)))
-
 # Ставит подсказку, куда удерживать слайдер (экспериментально)
 func place_hint() -> void:
 	var skin_init: NoteSkin = SLIDER_SKIN.instantiate()
@@ -71,14 +64,15 @@ func _process(delta: float) -> void:
 	if !LINE_INITIALIZED:
 		return
 	LINE_NODE.global_position = global_position
-	var _y_compensate : float = NEXT_ROAD.position.y - ROAD_POSITION.y # если дороги отличаются по высоте
-	# (но изменять их расположение по y не советуется)
-	draw_slider_line_end()
+	var _y_compensate : float = NEXT_ROAD.position.y - ROAD_POSITION.y
+	LINE_NODE.points[1] = Vector2(
+		NEXT_ROAD.global_position.x - global_position.x,
+		_y_compensate - (NOTE_SPEED * Conductor.s_per_quarter * (NEXT_NOTE_SPAWN_QUARTER - SPAWN_QUARTERS))
+	)
 	if SLIDING:
-		# Здесь происходит жесть (математика)
 		var k : float = maxf((Conductor.song_position - SPAWN_TIME) * NOTE_SPEED, 0.0)
-		var m : float = _y_compensate - (NOTE_SPEED * (Conductor.s_per_quarter * (NEXT_NOTE_SPAWN_QUARTER - SPAWN_QUARTERS)))
-		var n : float = NEXT_ROAD.global_position.x - global_position.x
+		var m : float = LINE_NODE.points[1].y
+		var n : float = LINE_NODE.points[1].x
 		var b : float = -((n * k) / m)
 		if !(LINE_NODE.points[0].y <= LINE_NODE.points[1].y):
 			LINE_NODE.points[0].x = b
