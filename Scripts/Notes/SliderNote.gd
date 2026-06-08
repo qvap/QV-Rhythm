@@ -17,7 +17,7 @@ var LINE_NODE: Line2D
 var LINE_INITIALIZED := false
 var NEXT_ROAD: Road
 var SLIDING := false
-var NEXT_NOTE_SPAWN_QUARTER: int
+var NEXT_NOTE_SPAWN_QUARTER: float
 var HINT: NoteSkin # содержит в себе ноду подсказки
 var SLIDER_TO_CONTROL: SliderNote # Чтобы подключать к контроллерам соответствующие слайдеры
 

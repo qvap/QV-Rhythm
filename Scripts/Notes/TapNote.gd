@@ -8,7 +8,7 @@ var SKIN : NoteSkin
 var SPAWN_POSITION : Vector2
 var ROAD_POSITION : Vector2
 var SPAWN_TIME : float
-var SPAWN_QUARTERS: int
+var SPAWN_QUARTERS: float
 var ROAD : Road
 var DISTANCE_TO_HIT : float
 var NOTE_SPEED : float # скорость в пикселях до удара

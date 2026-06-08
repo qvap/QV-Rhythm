@@ -449,8 +449,8 @@ func get_quarter_in_cell(cell: Vector2, grid_index: int) -> int:
 	return int(cell.y) + (grid_index * CHUNK_LENGTH)
 
 # Обратная функция
-func get_cell_in_quarter(quarter: int, grid_index: int) -> int:
-	return quarter - (grid_index * CHUNK_LENGTH)
+func get_cell_in_quarter(quarter: float, grid_index: int) -> int:
+	return roundi(quarter) - (grid_index * CHUNK_LENGTH)
 
 # Мигающая плашка "Сохранено"
 func save_chart_label_blink() -> void:

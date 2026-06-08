@@ -4,7 +4,7 @@ class_name HoldNote
 # Нота, которую нужно удерживать. Как обычная нота, только отрисовывает дорожку
 
 var LINE := preload("res://Scenes/Notes/HoldNoteLine.tscn")
-@export var NOTE_LENGTH := 0 # в четвертях
+@export var NOTE_LENGTH: float = 0.0 # в четвертях
 var LINE_INITIALIZED := false
 var HOLDING := false
 var LINE_NODE : Line2D

@@ -123,17 +123,26 @@ func convert_slider_to_hold(note: ChartNote) -> ChartNote:
 # Добавляет фантомные контроль-ноты для слайдера на дороге назначения (next_road)
 func setup_slider_controls(note: ChartNote) -> void:
 	var next_road: int = note.next_road
-	var length_in_quarters: int = note.next_quarter - note.quarter
+	var length_in_quarters: float = note.next_quarter - note.quarter
+	var full_ticks := floori(length_in_quarters)
+	var has_fraction := length_in_quarters != float(full_ticks)
 
 	var control := ChartNote.make_control(Global.CONTROL_TYPE.SLIDERCONTROL, note.quarter, next_road)
 	control.slider_id = note.slider_id
 	ROADS_MASSIVE[next_road].ALL_NOTES.push_back(control)
 
-	for tick in range(1, length_in_quarters + 1):
-		var control_type: int = Global.CONTROL_TYPE.SLIDERCONTROLEND if tick == length_in_quarters\
+	for tick in range(1, full_ticks + 1):
+		var is_end := (tick == full_ticks) and not has_fraction
+		var control_type: int = Global.CONTROL_TYPE.SLIDERCONTROLEND if is_end\
 		else Global.CONTROL_TYPE.SLIDERCONTROLTICK
 		ROADS_MASSIVE[next_road].ALL_NOTES.push_back(
-			ChartNote.make_control(control_type, note.quarter + tick, next_road)
+			ChartNote.make_control(control_type, note.quarter + float(tick), next_road)
+		)
+
+	if has_fraction:
+		ROADS_MASSIVE[next_road].ALL_NOTES.push_back(
+			ChartNote.make_control(Global.CONTROL_TYPE.SLIDERCONTROLEND,
+				note.quarter + length_in_quarters, next_road)
 		)
 
 # Фантомные контроль-ноты для холд ноты
@@ -142,11 +151,21 @@ func setup_hold_controls(note: ChartNote) -> void:
 	control.duration = note.duration
 	ROADS_MASSIVE[note.road].ALL_NOTES.push_back(control)
 
-	for tick in range(1, note.duration + 1):
-		var control_type: int = Global.CONTROL_TYPE.HOLDCONTROLEND if tick == note.duration\
+	var full_ticks := floori(note.duration)
+	var has_fraction := note.duration != float(full_ticks)
+
+	for tick in range(1, full_ticks + 1):
+		var is_end := (tick == full_ticks) and not has_fraction
+		var control_type: int = Global.CONTROL_TYPE.HOLDCONTROLEND if is_end\
 		else Global.CONTROL_TYPE.HOLDCONTROLTICK
 		ROADS_MASSIVE[note.road].ALL_NOTES.push_back(
-			ChartNote.make_control(control_type, note.quarter + tick, note.road)
+			ChartNote.make_control(control_type, note.quarter + float(tick), note.road)
+		)
+
+	if has_fraction:
+		ROADS_MASSIVE[note.road].ALL_NOTES.push_back(
+			ChartNote.make_control(Global.CONTROL_TYPE.HOLDCONTROLEND,
+				note.quarter + note.duration, note.road)
 		)
 
 # Запускает кондуктор и саму игру
@@ -205,5 +224,5 @@ func _input(event: InputEvent) -> void:
 		LoadScene.transition("res://Scenes/Editor/ChartEditor.tscn")
 
 func _ready() -> void:
-	load_game(true, "Shiawase")
+	load_game(true, "БЭЙСЛАЙН_БИЗНЕС")
 	Tools.create_user_directory()
