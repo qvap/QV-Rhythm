@@ -19,7 +19,7 @@ class_name ChartEditor
 @onready var BPM_LABEL: Label = $UI/VBoxContainer/HBoxContainer/BPMLabel
 @onready var CAMERA: Camera2D = $Camera2D
 
-var CURRENT_MAPCHART : Dictionary # чарт, редактируемый сейчас
+var CURRENT_MAPCHART : ChartData # чарт, редактируемый сейчас
 var CURRENT_MAPCHART_JSON_PATH: String # путь до файла чарта
 enum CELL_DATA_STRUCTURE {INDICATOR_TYPE, INDICATOR_NODE}
 
@@ -263,8 +263,7 @@ func load_files(core_level: bool, custom_map_folder_name: String) -> void:
 	if core_level: path = "res://CustomMaps/"+custom_map_folder_name
 	else: path = "user://Maps/"+custom_map_folder_name
 	var mapdata = Tools.parse_json(path+"/mapdata.json")
-	var mapchart = Tools.parse_json(path+"/mapchart0.json")
-	CURRENT_MAPCHART = mapchart
+	CURRENT_MAPCHART = ChartData.load_from(path+"/mapchart0.json")
 	CURRENT_MAPCHART_JSON_PATH = path+"/mapchart0.json"
 	
 	Conductor.load_song_from_json(mapdata, custom_map_folder_name)
@@ -279,279 +278,154 @@ func load_files(core_level: bool, custom_map_folder_name: String) -> void:
 	load_map(CURRENT_MAPCHART)
 	PLAY_SPEED = CURRENT_CELL_SIZE / Conductor.s_per_quarter
 
-# Загружает в сетку JSON файл чарта
-func load_map(mapchart: Dictionary) -> void:
-	var notes: Array = mapchart["Notes"]
-	var colorways: Array = mapchart["ColorZones"]
-	
-	# ещё одна итерация, чтобы создать конечные точки холд нот
-	for hold_note in notes:
-		if hold_note[Global.NOTE_CHART_STRUCTURE.TYPE] == Global.NOTE_TYPE.HOLDNOTE and\
-		len(hold_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO]) != 0:
-			var quarter_to_spawn: int = hold_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] +\
-			hold_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION]
-			var structured_note_array: Array = []
-			structured_note_array.resize(len(Global.NOTE_CHART_STRUCTURE.values()))
-			structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = hold_note[Global.NOTE_CHART_STRUCTURE.TYPE]
-			structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = hold_note[Global.NOTE_CHART_STRUCTURE.ROAD]
-			structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = quarter_to_spawn
-			structured_note_array[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO] = []
-			notes.push_back(structured_note_array)
-	
+# Загружает чарт в сетку редактора
+func load_map(chart: ChartData) -> void:
+	# Рабочий список нот + конечные точки холд нот: в редакторе холд рисуется
+	# двумя индикаторами (начало и конец), в файле — одной нотой с длиной.
+	var notes: Array[ChartNote] = chart.notes.duplicate()
+	for hold_note in chart.notes:
+		if hold_note.type == Global.NOTE_TYPE.HOLDNOTE and hold_note.duration != 0:
+			notes.push_back(ChartNote.new(Global.NOTE_TYPE.HOLDNOTE,\
+			hold_note.quarter + hold_note.duration, hold_note.road))
+
 	for note in notes:
-		
 		var indicator_init: EditorIndicator = INDICATOR_RESOURCE.instantiate()
-		var chunk_index: int = floor(note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN]/CHUNK_LENGTH)
+		var chunk_index: int = floor(float(note.quarter) / CHUNK_LENGTH)
 		var corresponding_chunk: EditorGrid = GRID_HOLDER.get_child(chunk_index)
-		var current_cell: Vector2 = Vector2(note[Global.NOTE_CHART_STRUCTURE.ROAD],\
-		get_cell_in_quarter(note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN], chunk_index))
-		var corresponding_dictionary: Dictionary = corresponding_chunk.GRID_DICTIONARY
-		var note_type: int = note[Global.NOTE_CHART_STRUCTURE.TYPE]
-		
-		match note_type:
+		var current_cell: Vector2 = Vector2(note.road, get_cell_in_quarter(note.quarter, chunk_index))
+
+		match note.type:
 			Global.NOTE_TYPE.TAPNOTE:
 				indicator_init.TYPE = INDICATOR_TYPE.TAP
 			Global.NOTE_TYPE.HOLDNOTE:
 				indicator_init.TYPE = INDICATOR_TYPE.HOLD
-			Global.NOTE_TYPE.SLIDER:
+			Global.NOTE_TYPE.SLIDER, Global.NOTE_TYPE.SLIDERTICK:
 				indicator_init.TYPE = INDICATOR_TYPE.SLIDE
-				indicator_init.SLIDER_ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
-			Global.NOTE_TYPE.SLIDERTICK:
-				indicator_init.TYPE = INDICATOR_TYPE.SLIDE
-				indicator_init.SLIDER_ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
+				indicator_init.SLIDER_ID = note.slider_id
 			Global.NOTE_TYPE.SLIDEREND:
 				indicator_init.TYPE = INDICATOR_TYPE.SLIDE
-				indicator_init.SLIDER_ID = note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO][Global.SLIDER_NOTE_ADDITIONAL_INFO.ID]
-				SIDE_BAR.CURRENT_SLIDER_ID = maxi(indicator_init.SLIDER_ID, SIDE_BAR.CURRENT_SLIDER_ID)
-			
-		corresponding_dictionary[Vector2(note[Global.NOTE_CHART_STRUCTURE.ROAD],\
-		get_cell_in_quarter(note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN], chunk_index))] =\
-		[indicator_init.TYPE, indicator_init]
-		
+				indicator_init.SLIDER_ID = note.slider_id
+				SIDE_BAR.CURRENT_SLIDER_ID = maxi(note.slider_id, SIDE_BAR.CURRENT_SLIDER_ID)
+
+		corresponding_chunk.GRID_DICTIONARY[current_cell] = [indicator_init.TYPE, indicator_init]
 		indicator_init.position = corresponding_chunk.grid_to_world(current_cell)
 		indicator_init.position.x += CURRENT_CELL_SIZE / 2.0
 		indicator_init.position.y += CURRENT_CELL_SIZE / 2.0
 		corresponding_chunk.add_child(indicator_init)
-	
+
 	var loading_colorways_array: Array = []
-	
-	for colorway in colorways:
-		
+
+	for zone in chart.color_zones:
 		var colorway_array: Array = []
-		for color in colorway[Global.COLORWAY_CHART_STRUCTURE.COLORWAY]:
-			if Color.html_is_valid(color):
-				colorway_array.push_back(Color.html(color))
+		for color_code in zone.colors:
+			if Color.html_is_valid(color_code):
+				colorway_array.push_back(Color.html(color_code))
 			else:
 				push_error("Неправильный код html цвета!")
-		
-		var colorway_quarter_to_spawn: int = colorway[Global.COLORWAY_CHART_STRUCTURE.QUARTER_TO_SPAWN]
-		
+
 		var indicator_init: EditorIndicator = INDICATOR_RESOURCE.instantiate()
 		indicator_init.TYPE = INDICATOR_TYPE.ZONE_COLOR
-		var chunk_index: int = floor(float(colorway_quarter_to_spawn)/CHUNK_LENGTH)
+		var chunk_index: int = floor(float(zone.quarter) / CHUNK_LENGTH)
 		var corresponding_chunk: EditorGridZone = GRID_COLOR_ZONE_HOLDER.get_child(chunk_index)
-		var current_cell: Vector2 = Vector2(0, get_cell_in_quarter(colorway_quarter_to_spawn, chunk_index))
-		var corresponding_dictionary: Dictionary = corresponding_chunk.GRID_DICTIONARY
-		corresponding_dictionary[Vector2(0, get_cell_in_quarter(colorway_quarter_to_spawn, chunk_index))] =\
-		[indicator_init, colorway_array]
-		
+		var current_cell: Vector2 = Vector2(0, get_cell_in_quarter(zone.quarter, chunk_index))
+		corresponding_chunk.GRID_DICTIONARY[current_cell] = [indicator_init, colorway_array]
+
 		indicator_init.position = corresponding_chunk.grid_to_world(current_cell)
 		indicator_init.position.x += CURRENT_CELL_SIZE / 2.0
 		indicator_init.position.y += CURRENT_CELL_SIZE / 2.0
-		
-		var loading_colorway_array: Array = []
-		loading_colorway_array.resize(2)
-		loading_colorway_array[0] = "Color"
-		loading_colorway_array[1] = colorway_array
+
+		var loading_colorway_array: Array = ["Color", colorway_array]
 		if !(loading_colorway_array in loading_colorways_array):
 			loading_colorways_array.push_back(loading_colorway_array)
-		
+
 		corresponding_chunk.add_child(indicator_init)
-	
+
 	COLOR_ZONE_LIST.update_list(loading_colorways_array)
 
 # Сохраняет сделанный чарт в JSON файл
 func save_map() -> void:
-	var saving_chart: Dictionary = {"Notes" : [], "ColorZones" : []}
-	var saving_note_array: Array = saving_chart["Notes"]
-	var saving_color_array: Array = saving_chart["ColorZones"]
-	
-	var hold_connected: bool = true # помечает холд ноты, которые уже сохранены
-	var slider_indexes: Array = [] # будет держать в себе айди сохраняемых слайдеров
-	
-	#region Сохранение нот
-	for grid_index in range(GRID_HOLDER.get_child_count()): # каждая сетка в холдере
-		
-		var grid: EditorGrid = GRID_HOLDER.get_child(grid_index)
-		
-		for cell in grid.GRID_DICTIONARY: # каждый элемент в списке сетки
-			
-			if grid.GRID_DICTIONARY[cell] != null: # если в клетке ничего нет, то скипает
-			
-				var current_cell_data: Array = grid.GRID_DICTIONARY[cell]
-				var note_road: int = cell.x
-				var note_quarter_to_spawn: int = get_quarter_in_cell(cell, grid_index)
-				var structured_note_array: Array
-				
-				match current_cell_data[CELL_DATA_STRUCTURE.INDICATOR_TYPE]:
-					
-					INDICATOR_TYPE.TAP:
-						structured_note_array = Tools.create_structured_note_array(false)
-						structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.NOTE_TYPE.TAPNOTE
-						structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = note_road
-						structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = note_quarter_to_spawn
-						saving_note_array.push_back(structured_note_array)
-						
-					INDICATOR_TYPE.HOLD:
-						structured_note_array = Tools.create_structured_note_array(true)
-						var hold_status: bool = current_cell_data[CELL_DATA_STRUCTURE.INDICATOR_NODE].HOLD_CONNECTED
-						if hold_status == false:
-							current_cell_data[CELL_DATA_STRUCTURE.INDICATOR_NODE].HOLD_CONNECTED = hold_connected
-							var structured_note_additional_info: Array = []
-							structured_note_additional_info.resize(len(Global.HOLD_NOTE_ADDITIONAL_INFO.values()))
-							structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.NOTE_TYPE.HOLDNOTE
-							structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = note_road
-							structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = get_quarter_in_cell(cell, grid_index)
-							structured_note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION] =\
-							iterate_for_hold_note_save(grid_index, cell, hold_connected)
-							if structured_note_additional_info[Global.HOLD_NOTE_ADDITIONAL_INFO.DURATION] == null:
-								push_error("Данный чарт не соответствует требованиям!")
-								return
-							structured_note_array[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO] = structured_note_additional_info
-							saving_note_array.push_back(structured_note_array)
-						else:
-							continue
-						
-					INDICATOR_TYPE.SLIDE:
-						structured_note_array = Tools.create_structured_note_array(true)
-						var slider_id: int = current_cell_data[CELL_DATA_STRUCTURE.INDICATOR_NODE].SLIDER_ID
-						if !(slider_id in slider_indexes):
-							var structured_note_additional_info: Array = []
-							structured_note_additional_info.resize(len(Global.SLIDER_NOTE_ADDITIONAL_INFO.values()) - 2)
-							structured_note_array[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.NOTE_TYPE.SLIDER
-							structured_note_array[Global.NOTE_CHART_STRUCTURE.ROAD] = note_road
-							structured_note_array[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = note_quarter_to_spawn
-							structured_note_additional_info[Global.SLIDER_NOTE_ADDITIONAL_INFO.ID] = slider_id
-							structured_note_array[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO] = structured_note_additional_info
-							saving_note_array.push_back(structured_note_array)
-							var iterated_array: Array = iterate_for_slider_note_save(grid_index, cell, slider_id)
-							for note in iterated_array:
-								saving_note_array.push_back(note)
-							slider_indexes.push_back(slider_id)
-			else:
-				continue
-	
-	reset_hold_notes_status()
-	#endregion
-	
-	#region Сохранение зон цвета
-	for zone_index in range(GRID_COLOR_ZONE_HOLDER.get_child_count()):
-		
-		var zone: EditorGridZone = GRID_COLOR_ZONE_HOLDER.get_child(zone_index)
-		
-		for cell in zone.GRID_DICTIONARY:
-			
-			if zone.GRID_DICTIONARY[cell] != null:
-			
-				var current_cell_data: Array = zone.GRID_DICTIONARY[cell]
-				var current_colorway: Array = current_cell_data[1].duplicate()
-				for color_index in len(current_colorway):
-					current_colorway[color_index] = current_colorway[color_index].to_html(false)
-				var colorway_quarter_to_spawn: int = get_quarter_in_cell(cell, zone_index)
-				var structured_colorway_array: Array = Tools.create_structured_colorway_array()
-				structured_colorway_array[Global.COLORWAY_CHART_STRUCTURE.QUARTER_TO_SPAWN] = colorway_quarter_to_spawn
-				structured_colorway_array[Global.COLORWAY_CHART_STRUCTURE.COLORWAY] = current_colorway
-				saving_color_array.push_back(structured_colorway_array)
-	#endregion
-	
-	saving_chart["Notes"] = saving_note_array
-	saving_chart["ColorZones"] = saving_color_array
-	Tools.save_json(CURRENT_MAPCHART_JSON_PATH, saving_chart)
+	var chart := ChartData.new()
+	chart.notes = collect_notes()
+	chart.color_zones = collect_color_zones()
+	chart.save_to(CURRENT_MAPCHART_JSON_PATH)
 	save_chart_label_blink()
 
-# Получает клетку с индикатором холд ноты, ищет следующий индикатор холд ноты
-# и возвращает разницу времени спавна между ними
-func iterate_for_hold_note_save(given_grid_index: int, given_cell: Vector2, given_status: bool):
-	
-	for grid_index in range(given_grid_index, GRID_HOLDER.get_child_count()):
-		
-		var grid: EditorGrid = GRID_HOLDER.get_child(grid_index)
-		
-		for cell in grid.GRID_DICTIONARY:
-			
-			if grid.GRID_DICTIONARY[cell] != null:
-			
-				var note_indicator_type: int = grid.GRID_DICTIONARY[cell][CELL_DATA_STRUCTURE.INDICATOR_TYPE]
-				var indicator_node: EditorIndicator = grid.GRID_DICTIONARY[cell][CELL_DATA_STRUCTURE.INDICATOR_NODE]
-				
-				# проверка на нужную дорогу и разную четверть спавна
-				if !indicator_node.HOLD_CONNECTED and note_indicator_type == INDICATOR_TYPE.HOLD and cell.x == given_cell.x\
-				and get_quarter_in_cell(cell, grid_index) != get_quarter_in_cell(given_cell, given_grid_index):
-					
-					grid.GRID_DICTIONARY[cell][CELL_DATA_STRUCTURE.INDICATOR_NODE].HOLD_CONNECTED = given_status
-					return get_quarter_in_cell(cell, grid_index) - get_quarter_in_cell(given_cell, given_grid_index)
-					
-				else:
-					continue
-			else:
-				continue
-	
-	return null # если ничего не нашлось
+# Собирает ноты из всех сеток редактора в типизированный список.
+# Холд индикаторы соединяются попарно (начало/конец) по дороге,
+# слайдер индикаторы группируются по SLIDER_ID.
+func collect_notes() -> Array[ChartNote]:
+	var notes: Array[ChartNote] = []
+	var hold_quarters_by_road: Dictionary = {}   # дорога -> Array[int] четвертей
+	var slider_cells_by_id: Dictionary = {}       # slider_id -> Array[{road, quarter}]
 
-# Сбрасывает значения у холд нот HOLD_CONNECTED
-# (исправляет баг, при котором при сохранении из чарта пропадают холд ноты)
-func reset_hold_notes_status() -> void:
 	for grid_index in range(GRID_HOLDER.get_child_count()):
 		var grid: EditorGrid = GRID_HOLDER.get_child(grid_index)
 		for cell in grid.GRID_DICTIONARY:
-			if grid.GRID_DICTIONARY[cell] != null and\
-			grid.GRID_DICTIONARY[cell][CELL_DATA_STRUCTURE.INDICATOR_TYPE] == INDICATOR_TYPE.HOLD:
-				grid.GRID_DICTIONARY[cell][CELL_DATA_STRUCTURE.INDICATOR_NODE].HOLD_CONNECTED = false
-
-# Получает клетку с индикатором слайдер ноты и её айди, после чего ищет все появления
-# слайдер индикаторов с этим айди и возвращает список со всеми найденными нотами
-func iterate_for_slider_note_save(given_grid_index: int, given_cell: Vector2, given_slider_id: int) -> Array:
-	
-	var array_for_return: Array = []
-	
-	for grid_index in range(given_grid_index, GRID_HOLDER.get_child_count()):
-		
-		var grid: EditorGrid = GRID_HOLDER.get_child(grid_index)
-		
-		for cell in grid.GRID_DICTIONARY:
-			
-			if grid.GRID_DICTIONARY[cell] != null:
-			
-				var note_indicator_type: int = grid.GRID_DICTIONARY[cell][CELL_DATA_STRUCTURE.INDICATOR_TYPE]
-				var note_slider_id: int = grid.GRID_DICTIONARY[cell][CELL_DATA_STRUCTURE.INDICATOR_NODE].SLIDER_ID
-				
-				if note_indicator_type == INDICATOR_TYPE.SLIDE and\
-				note_slider_id == given_slider_id and\
-				get_quarter_in_cell(cell, grid_index) != get_quarter_in_cell(given_cell, given_grid_index):
-					
-					var structured_note: Array = Tools.create_structured_note_array(true)
-					var structured_note_additional_info: Array = []
-					structured_note_additional_info.resize(len(Global.SLIDER_NOTE_ADDITIONAL_INFO.values()) - 2)
-					# Если что, не забудь, что сверху -2, потому что остальные 2 элемента служебные
-					
-					structured_note[Global.NOTE_CHART_STRUCTURE.ROAD] = cell.x
-					structured_note[Global.NOTE_CHART_STRUCTURE.QUARTER_TO_SPAWN] = get_quarter_in_cell(cell, grid_index)
-					structured_note_additional_info[Global.SLIDER_NOTE_ADDITIONAL_INFO.ID] = given_slider_id
-					structured_note[Global.NOTE_CHART_STRUCTURE.ADDITIONAL_INFO] = structured_note_additional_info
-					
-					array_for_return.push_back(structured_note)
-			else:
+			var cell_data = grid.GRID_DICTIONARY[cell]
+			if cell_data == null:
 				continue
-	
-	# Дополнительно проходится по списку, чтобы выставить нужные типы слайдера
-	for note_index in range(len(array_for_return)):
-		var note: Array = array_for_return[note_index]
-		if note_index == len(array_for_return) - 1:
-			note[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.NOTE_TYPE.SLIDEREND
-		else:
-			note[Global.NOTE_CHART_STRUCTURE.TYPE] = Global.NOTE_TYPE.SLIDERTICK
-	
-	return array_for_return
+			var indicator_type: int = cell_data[CELL_DATA_STRUCTURE.INDICATOR_TYPE]
+			var indicator_node: EditorIndicator = cell_data[CELL_DATA_STRUCTURE.INDICATOR_NODE]
+			var note_road: int = int(cell.x)
+			var note_quarter: int = get_quarter_in_cell(cell, grid_index)
+			match indicator_type:
+				INDICATOR_TYPE.TAP:
+					notes.push_back(ChartNote.new(Global.NOTE_TYPE.TAPNOTE, note_quarter, note_road))
+				INDICATOR_TYPE.HOLD:
+					if not hold_quarters_by_road.has(note_road):
+						hold_quarters_by_road[note_road] = []
+					hold_quarters_by_road[note_road].push_back(note_quarter)
+				INDICATOR_TYPE.SLIDE:
+					var slider_id: int = indicator_node.SLIDER_ID
+					if not slider_cells_by_id.has(slider_id):
+						slider_cells_by_id[slider_id] = []
+					slider_cells_by_id[slider_id].push_back({"road": note_road, "quarter": note_quarter})
+
+	# Холд ноты: индикаторы на одной дороге образуют пары начало/конец
+	for road in hold_quarters_by_road:
+		var quarters: Array = hold_quarters_by_road[road]
+		quarters.sort()
+		var i: int = 0
+		while i + 1 < quarters.size():
+			var hold := ChartNote.new(Global.NOTE_TYPE.HOLDNOTE, quarters[i], road)
+			hold.duration = quarters[i + 1] - quarters[i]
+			notes.push_back(hold)
+			i += 2
+		if quarters.size() % 2 != 0:
+			push_error("Холд нота без парного индикатора (дорога %d) — пропущена при сохранении." % road)
+
+	# Слайдеры: по возрастанию четверти — голова, тики, конец
+	for slider_id in slider_cells_by_id:
+		var cells: Array = slider_cells_by_id[slider_id]
+		cells.sort_custom(func(a, b): return a["quarter"] < b["quarter"])
+		for idx in range(cells.size()):
+			var note_type: int
+			if idx == 0:
+				note_type = Global.NOTE_TYPE.SLIDER
+			elif idx == cells.size() - 1:
+				note_type = Global.NOTE_TYPE.SLIDEREND
+			else:
+				note_type = Global.NOTE_TYPE.SLIDERTICK
+			var slider_note := ChartNote.new(note_type, cells[idx]["quarter"], cells[idx]["road"])
+			slider_note.slider_id = slider_id
+			notes.push_back(slider_note)
+
+	return notes
+
+# Собирает зоны цвета из сеток зон
+func collect_color_zones() -> Array[ColorZone]:
+	var zones: Array[ColorZone] = []
+	for zone_index in range(GRID_COLOR_ZONE_HOLDER.get_child_count()):
+		var zone_grid: EditorGridZone = GRID_COLOR_ZONE_HOLDER.get_child(zone_index)
+		for cell in zone_grid.GRID_DICTIONARY:
+			var cell_data = zone_grid.GRID_DICTIONARY[cell]
+			if cell_data == null:
+				continue
+			var color_zone := ColorZone.new(get_quarter_in_cell(cell, zone_index))
+			for color in cell_data[1]: # cell_data = [нода-индикатор, Array[Color]]
+				color_zone.colors.push_back(color.to_html(false))
+			zones.push_back(color_zone)
+	return zones
 
 # Звук метронома
 func metronome_sound(_current_beat: int) -> void:
