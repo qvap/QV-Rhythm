@@ -4,3 +4,7 @@
 *.blend
 *.blend1
 *.flp
+
+# Claude Code
+CLAUDE.md
+.claude/
